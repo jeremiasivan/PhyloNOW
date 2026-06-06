@@ -66,8 +66,8 @@ if (params$redo) {
 
 if (!file.exists(fn_log)) {
   readr::write_lines(c("####################################",
-                        "####          PhyloNOW         ####",
-                        "####################################"), path=fn_log)
+                       "####          PhyloNOW          ####",
+                       "####################################"), path=fn_log)
 }
 
 knitr::opts_knit$set(root.dir=currentdir)

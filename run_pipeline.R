@@ -29,7 +29,7 @@ opt <- parse_args(OptionParser(option_list=option_list))
 
 # stop the code if config file is invalid
 if (is.null(opt$config)) {
-  stop("--config is required.\n
+  stop("-c/--config is required.\n
         Usage: Rscript run_pipeline.R --config config.yaml")
 }
 
