@@ -1,0 +1,35 @@
+# ============================================================
+#  PhyloNOW config file
+#  
+#  Edit this file, then run:
+#    Rscript run_pipeline.R --config config.yaml
+# ============================================================
+
+# --- General -------------------------------------------------
+codedir:  "/home/user/PhyloNOW/"          # path to PhyloNOW directory
+prefix:   ""                              # output prefix (used for filenames) (default: "" (filename of input_aln))
+outdir:   "/home/user/output"             # output directory
+thread:   1                               # number of parallel threads (default: 1)
+redo:     FALSE                           # re-run even if output files exist (default: FALSE)
+
+# --- Executables ---------------------------------------------
+exe_seqkit: "seqkit"                      # path to seqkit executable
+exe_iqtree: "iqtree2"                     # path to IQ-TREE2 executable
+
+# --- IQ-TREE2 Settings ---------------------------------------
+set_blmin:  TRUE                          # set minimum branch length per window (default: TRUE)
+set_model:  FALSE                         # set a fixed substitution model (default: FALSE)
+dna_model:  ""                            # substitution model to be used (only if set_model==TRUE; e.g., JC)
+
+bootstrap_type:  ""                       # "ufboot" or "nonparametric" (default: "" (no boostrap))
+bootstrap:       1000                     # number of bootstrap replicates (only if bootstrap_type!=""; default: 1000)
+outgroup:        ""                       # outgroup taxon name (default: "" (no outgroup))
+
+run_rootstrap:     FALSE                  # run rootstrap analysis for each gene tree (default: FALSE)
+run_midpoint_root: FALSE                  # run midpoint rooting for each gene tree (default: FALSE)
+
+# --- NOW Analysis --------------------------------------------
+input_aln:      "alignment.fasta"         # path to input FASTA alignment
+init_wsize:     NA                        # initial window size (bp) (default: NA (full alignment length))
+division_prop:  [0.25, 0.5, 0.75]         # split configurations to test at each splitting step (default: 0.25, 0.5, 0.75)
+min_informative_sites: 1                  # minimum parsimony-informative sites per window (default: 1)

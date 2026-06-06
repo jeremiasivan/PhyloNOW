@@ -59,7 +59,7 @@ if (is.null(min_inf_sites) || min_inf_sites == "") {
 
 # extract the window size
 init_wsize <- params$init_wsize
-if (is.null(init_wsize)) {
+if (is.na(init_wsize)) {
   init_wsize <- s_ln
 }
 
