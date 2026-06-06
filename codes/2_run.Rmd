@@ -53,6 +53,12 @@ if (is.na(init_wsize)) {
   init_wsize <- seq_len
 }
 
+# set outgroup
+outgroup <- params$outgroup
+if (any(outgroup != "")) {
+  outgroup <- names(seq)[names(seq)%in%outgroup]
+}
+
 msg <- paste0("Running PhyloNOW with a starting window size of ", init_wsize, "bp")
 readr::write_lines(msg, path=fn_log, append=T)
 cat(msg)
@@ -542,30 +548,23 @@ doSNOW::registerDoSNOW(nwcl)
 # iterate over windows
 df_topology <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
   # output directory
-  outdir_window <- paste0(outdir_final, df_current$window[i], "/")
+  outdir_window <- file.path(outdir_final, df_current$window[i])
   if (!dir.exists(outdir_window)) {
     dir.create(outdir_window, recursive=T)
   }
 
   # output files
-  fn_fasta <- paste0(outdir_window, df_current$window[i], ".fa")
+  fn_fasta <- file.path(outdir_window, paste0(df_current$window[i], ".fa"))
   fn_iqtree <- paste0(fn_fasta, ".iqtree")
   fn_treefile <- paste0(fn_fasta, ".treefile")
   if (!all(file.exists(fn_fasta, fn_iqtree, fn_treefile)) || params$redo) {
     system(paste("cp", df_current$dir[i], fn_fasta))
 
     # read FASTA file
-    seq <- seqinr::read.fasta(fn_fasta, whole.header=T)
-    seq <- as.data.frame(do.call(rbind, seq))
-
-    # set outgroup
-    outgroup <- params$outgroup
-    if (!is.null(params$outgroup) && length(params$outgroup) > 0){
-      outgroup <- rownames(seq)[rownames(seq)%in%outgroup]
-    }
+    seq <- Biostrings::readBStringSet(fn_fasta)
 
     # conditional if bootstrap is needed
-    if (nrow(unique(seq)) <= 3) {
+    if (length(unique(as.character(seq))) <= 3) {
       f_iqtree2_single(fn_fasta, outgroup, df_current$length[i], params$set_blmin, params$set_model, params$substitution_model, "", 0, params$exe_iqtree)
     } else {
       f_iqtree2_single(fn_fasta, outgroup, df_current$length[i], params$set_blmin, params$set_model, params$substitution_model, params$bootstrap_type, params$bootstrap, params$exe_iqtree)
@@ -582,15 +581,16 @@ df_topology <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
   tre$edge.length <- NULL
   tre$node.label <- NULL
 
-  trestat <- f_window_tree_statistics(fn_iqtree, fn_treefile, params$bootstrap_type, min_branch_support)
+  # check if gene tree has high average bootstrap value
+  is_highbs <- f_is_tree_highbs(fn_treefile, params$bootstrap_type, min_branch_support)
 
-  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(tre), is_highbs=!is.null(trestat$tree)))
+  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(tre), is_highbs=is_highbs))
 }
 
 stopCluster(nwcl)
 
 # update list of topologies
-if (!is.null(params$outgroup) && length(params$outgroup) > 0){
+if (all(outgroup != "") && length(outgroup) != 0) {
   df_topology <- f_update_df_topology_rooted(df_topology)
 } else {
   df_topology <- f_update_df_topology_unrooted(df_topology)
@@ -599,22 +599,24 @@ if (!is.null(params$outgroup) && length(params$outgroup) > 0){
 # save data.frame
 data.table::fwrite(df_topology, file=fn_topsum, row.names=F, col.names=T, quote=F, sep="\t")
 
-# summarise frequency
+# summarise topology proportion
 df_topology_all <- df_topology %>%
     group_by(topology) %>%
     summarise(sum_freq=n(), sum_length=sum(length)) %>%
     arrange(desc(sum_freq), desc(sum_length)) %>%
     mutate(prop=round(sum_freq/sum(sum_freq)*100,3), w_prop=round(sum_length/sum(sum_length)*100,3))
-
-df_topology_highbs <- df_topology %>%
-    filter(is_highbs==TRUE) %>%
-    group_by(topology) %>%
-    summarise(sum_freq=n(), sum_length=sum(length)) %>%
-    arrange(desc(sum_freq), desc(sum_length)) %>%
-    mutate(prop=round(sum_freq/sum(sum_freq)*100,3), w_prop=round(sum_length/sum(sum_length)*100,3))
-
 data.table::fwrite(df_topology_all, file=fn_uqtops_all, row.names=F, col.names=T, quote=F, sep="\t")
-data.table::fwrite(df_topology_highbs, file=fn_uqtops_highbs, row.names=F, col.names=T, quote=F, sep="\t")
+
+# summarise highly-supported topology proportion
+if (all(outgroup != "") && length(outgroup) != 0) {
+  df_topology_highbs <- df_topology %>%
+      filter(is_highbs==TRUE) %>%
+      group_by(topology) %>%
+      summarise(sum_freq=n(), sum_length=sum(length)) %>%
+      arrange(desc(sum_freq), desc(sum_length)) %>%
+      mutate(prop=round(sum_freq/sum(sum_freq)*100,3), w_prop=round(sum_length/sum(sum_length)*100,3))
+  data.table::fwrite(df_topology_highbs, file=fn_uqtops_highbs, row.names=F, col.names=T, quote=F, sep="\t")
+}
 ```
 
 ```{r tree-rootstrap, eval=params$run_rootstrap}

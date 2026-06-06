@@ -39,7 +39,7 @@ f_iqtree2_single <- function(input, outgroup, window_size, setblmin, setmodel, s
                       "-T 1 --quiet --redo")
   
   # set outgroup
-  if (outgroup != ""){
+  if (all(outgroup != "") && length(outgroup) != 0) {
     iqtree_cmd <- paste(iqtree_cmd, "-o", paste(outgroup, collapse=","))
   }
   
@@ -85,6 +85,74 @@ f_is_informative <- function(fn_iqtree, min_informative_sites) {
   }
 
   return(FALSE)
+}
+
+# function: check if gene tree has high average bootstrap value
+f_is_tree_highbs <- function(fn_treefile, bootstrap_type, min_branch_support) {
+  # read treefile
+  tre <- ape::read.tree(fn_treefile)
+
+  # check if bootstrap type is valid
+  if (bootstrap_type != "") {
+    bl <- subset(tre$node.label, tre$node.label != "")
+
+    # check if the mean bootstrap support is above the threshold
+    if (!is.null(bl) && mean(as.numeric(bl)) >= min_branch_support) {
+      return(TRUE)
+    }
+  }
+
+  return(FALSE)
+}
+
+# function: update data.frame with consistent topology format
+f_update_df_topology_unrooted <- function(df_topology) {
+  # extract list of unique topologies
+  ls_topology <- unique(df_topology$topology)
+
+  # iterate over topologies
+  i <- 1
+  while (i <= length(ls_topology)) {
+    j <- i + 1
+    while (j <= length(ls_topology)) {
+      if (!is.na(ls_topology[i]) && !is.na(ls_topology[j]) && ape::all.equal.phylo(ape::unroot(ape::read.tree(text=ls_topology[i])),
+                                                                                   ape::unroot(ape::read.tree(text=ls_topology[j])))) {
+          # update topology
+          df_topology[, topology := gsub(ls_topology[j], ls_topology[i], topology, fixed=TRUE)]
+          ls_topology <- ls_topology[-j]
+      } else {
+        j <- j + 1
+      }
+    }
+    i <- i + 1
+  }
+
+  return(df_topology)
+}
+
+# function: update data.frame with consistent topology format
+f_update_df_topology_rooted <- function(df_topology) {
+  # extract list of unique topologies
+  ls_topology <- unique(df_topology$topology)
+
+  # iterate over topologies
+  i <- 1
+  while (i <= length(ls_topology)) {
+    j <- i + 1
+    while (j <= length(ls_topology)) {
+      if (!is.na(ls_topology[i]) && !is.na(ls_topology[j]) && ape::all.equal.phylo(ape::read.tree(text=ls_topology[i]),
+                                                                                   ape::read.tree(text=ls_topology[j]))) {
+          # update topology
+          df_topology[, topology := gsub(ls_topology[j], ls_topology[i], topology, fixed=TRUE)]
+          ls_topology <- ls_topology[-j]
+      } else {
+        j <- j + 1
+      }
+    }
+    i <- i + 1
+  }
+
+  return(df_topology)
 }
 
 # function: plot the topologies across chromosomes
@@ -146,68 +214,4 @@ f_extract_max_rootstrap <- function(fn_rootstrap_nex) {
   max_rootstrap <- max(rootstrap_values)
 
   return(max_rootstrap)
-}
-
-# function: update data.frame with consistent topology format
-f_update_df_topology_unrooted <- function(df_topology) {
-  # extract list of unique topologies
-  ls_topology <- unique(df_topology$topology)
-
-  # iterate over topologies
-  for (i in unique(df_topology$topology)) {
-    for (j in ls_topology) {
-      # skip the comparison if NA
-      if (is.na(i) || is.na(j)) {
-        next
-      }
-
-      # skip if both topologies are identical
-      if (i == j) {
-        next
-      }
-
-      # update topology name if equal
-      if (ape::all.equal.phylo(ape::unroot(ape::read.tree(text = i)), ape::unroot(ape::read.tree(text = j)))) {
-        df_topology[, topology := gsub(i, j, topology, fixed = TRUE)]
-        
-        idx_row <- match(i, ls_topology)
-        ls_topology <- ls_topology[-idx_row]
-        break
-      }
-    }
-  }
-
-  return(df_topology)
-}
-
-# function: update data.frame with consistent topology format
-f_update_df_topology_rooted <- function(df_topology) {
-  # extract list of unique topologies
-  ls_topology <- unique(df_topology$topology)
-
-  # iterate over topologies
-  for (i in unique(df_topology$topology)) {
-    for (j in ls_topology) {
-      # skip the comparison if NA
-      if (is.na(i) || is.na(j)) {
-        next
-      }
-
-      # skip if both topologies are identical
-      if (i == j) {
-        next
-      }
-
-      # update topology name if equal
-      if (ape::all.equal.phylo(ape::read.tree(text = i), ape::read.tree(text = j))) {
-        df_topology[, topology := gsub(i, j, topology, fixed = TRUE)]
-        
-        idx_row <- match(i, ls_topology)
-        ls_topology <- ls_topology[-idx_row]
-        break
-      }
-    }
-  }
-
-  return(df_topology)
 }
