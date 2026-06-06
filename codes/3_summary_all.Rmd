@@ -1,8 +1,8 @@
 ---
-title: "Summary for Splitting-and-Merging NOW Runs"
+title: "Summary for PhyloNOW Runs"
 params:
   # general
-  codedir: "~/SimNOW/empirical_analysis"
+  codedir: "/home/user/PhyloNOW/"
   prefix: "sim"
   outdir: ""
   thread: 1
@@ -20,8 +20,7 @@ params:
 library(tidyverse)
 
 # load functions
-source(paste0(params$codedir,"/1_stepwise_now/functions.R"), local=TRUE)
-source(paste0(params$codedir,"/2_variable_window_size/functions.R"), local=TRUE)
+source(paste0(params$codedir,"/codes/functions.R"), local=TRUE)
 
 # create outdir
 dir_output_prefix <- paste0(params$outdir, "/", params$prefix, "/")

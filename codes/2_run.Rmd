@@ -93,7 +93,7 @@ foreach (i = 1:nrow(df_windows)) %dopar% {
 
   # run IQ-TREE2
   if (!file.exists(temp_fn_iqtree) || params$redo) {
-    f_iqtree2_single(temp_fn_fasta, NULL, df_windows$length[i], params$set_blmin, params$set_model, params$dna_model, "", 0, params$iqtree2dir)
+    f_iqtree2_single(temp_fn_fasta, NULL, df_windows$length[i], params$set_blmin, params$set_model, params$dna_model, "", 0, params$exe_iqtree)
   }
 }
   
@@ -235,8 +235,8 @@ while (is_repeat == TRUE) {
         # run IQ-TREE2
         fn_fasta_one <- paste0(dir_output, window_one, ".fa")
         fn_fasta_two <- paste0(dir_output, window_two, ".fa")
-        f_iqtree2_single(fn_fasta_one, NULL, seq_len_one, params$set_blmin, params$set_model, params$dna_model, "", 0, params$iqtree2dir)
-        f_iqtree2_single(fn_fasta_two, NULL, seq_len_two, params$set_blmin, params$set_model, params$dna_model, "", 0, params$iqtree2dir)
+        f_iqtree2_single(fn_fasta_one, NULL, seq_len_one, params$set_blmin, params$set_model, params$dna_model, "", 0, params$exe_iqtree)
+        f_iqtree2_single(fn_fasta_two, NULL, seq_len_two, params$set_blmin, params$set_model, params$dna_model, "", 0, params$exe_iqtree)
 
         # extract AIC
         fn_iqtree_one <- paste0(fn_fasta_one, ".iqtree")
@@ -400,7 +400,7 @@ while (is_repeat == TRUE) {
     # output files
     fn_iqtree <- paste0(fn_combined_fasta, ".iqtree")
     if (!file.exists(fn_iqtree) || params$redo) {
-      f_iqtree2_single(fn_combined_fasta, NULL, seq_len, params$set_blmin, params$set_model, params$dna_model, "", 0, params$iqtree2dir)
+      f_iqtree2_single(fn_combined_fasta, NULL, seq_len, params$set_blmin, params$set_model, params$dna_model, "", 0, params$exe_iqtree)
     }
 
     # extract AIC
@@ -496,9 +496,9 @@ df_topology <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
 
     # conditional if bootstrap is needed
     if (nrow(unique(seq)) <= 3) {
-      f_iqtree2_single(fn_fasta, outgroup, df_current$length[i], params$set_blmin, params$set_model, params$dna_model, "", 0, params$iqtree2dir)
+      f_iqtree2_single(fn_fasta, outgroup, df_current$length[i], params$set_blmin, params$set_model, params$dna_model, "", 0, params$exe_iqtree)
     } else {
-      f_iqtree2_single(fn_fasta, outgroup, df_current$length[i], params$set_blmin, params$set_model, params$dna_model, params$bootstrap_type, params$bootstrap, params$iqtree2dir)
+      f_iqtree2_single(fn_fasta, outgroup, df_current$length[i], params$set_blmin, params$set_model, params$dna_model, params$bootstrap_type, params$bootstrap, params$exe_iqtree)
     }
   }
 
@@ -566,7 +566,7 @@ df_rootstrap <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
   fn_treefile <- paste0(prefix, ".treefile")
   if (!all(file.exists(fn_rootstrap_nexus, fn_treefile)) || params$redo) {
     # run rootstrap
-    f_calculate_rootstrap(fn_fasta, prefix, params$bootstrap_type, params$bootstrap, params$iqtree2dir)
+    f_calculate_rootstrap(fn_fasta, prefix, params$bootstrap_type, params$bootstrap, params$exe_iqtree)
   }
 
   # check if .treefile is not available

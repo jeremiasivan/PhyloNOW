@@ -63,8 +63,8 @@ f_plot_top_pos <- function(df, colour_scheme, fn_output) {
 }
 
 # function: calculate rootstrap in IQ-TREE
-f_calculate_rootstrap <- function(input, prefix, bs_type, bs, dir_iqtree2) {
-  iqtree_cmd <- paste(dir_iqtree2,
+f_calculate_rootstrap <- function(input, prefix, bs_type, bs, exe_iqtree) {
+  iqtree_cmd <- paste(exe_iqtree,
                       "-s", input,
                       "--model-joint UNREST",
                       "--prefix", prefix,
