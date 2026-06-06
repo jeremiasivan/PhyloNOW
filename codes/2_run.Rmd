@@ -657,15 +657,16 @@ nwcl <- makeCluster(params$thread)
 doSNOW::registerDoSNOW(nwcl)
 
 # iterate over windows
-df_rootstrap <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
+df_rootstrap <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
   # output directory
-  outdir_window <- paste0(outdir_final, df_current$window[i], "/")
+  outdir_window <- file.path(outdir_final, df_current$window[i])
 
   # input file
-  fn_fasta <- paste0(outdir_window, df_current$window[i], ".fa")
+  fn_fasta <- file.path(outdir_window, paste0(df_current$window[i], ".fa"))
 
   # output files
-  prefix <- paste0(outdir_window, "nonrev_", df_current$window[i])
+  prefix <- file.path(outdir_window, paste0("nonrev_", df_current$window[i]))
+
   fn_rootstrap_nexus <- paste0(prefix, ".rootstrap.nex")
   fn_treefile <- paste0(prefix, ".treefile")
   if (!all(file.exists(fn_rootstrap_nexus, fn_treefile)) || params$redo) {
@@ -683,6 +684,7 @@ df_rootstrap <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
   tre$edge.length <- NULL
   tre$node.label <- NULL
 
+  # extract maximum rootstrap support
   max_root <- f_extract_max_rootstrap(fn_rootstrap_nexus)
 
   return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(tre), rootstrap=max_root))
@@ -703,15 +705,15 @@ nwcl <- makeCluster(params$thread)
 doSNOW::registerDoSNOW(nwcl)
 
 # iterate over windows
-df_midroot <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
+df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
   # output directory
-  outdir_window <- paste0(outdir_final, df_current$window[i], "/")
+  outdir_window <- file.path(outdir_final, df_current$window[i])
 
   # input file
-  fn_treefile <- paste0(outdir_window, df_current$window[i], ".fa.treefile")
+  fn_treefile <- file.path(outdir_window, paste0(df_current$window[i], ".fa.treefile"))
 
   # output files
-  fn_treefile_root <- paste0(outdir_window, "midroot_", df_current$window[i], ".treefile")
+  fn_treefile_root <- file.path(outdir_window, paste0("midroot_", df_current$window[i], ".treefile"))
   if (!file.exists(fn_treefile_root) || params$redo) {
     # midpoint root
     tre <- ape::read.tree(fn_treefile)
@@ -721,16 +723,15 @@ df_midroot <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
 
   # check if .treefile is not available
   if (!file.exists(fn_treefile_root)) {
-    return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], tree=NA, topology=NA))
+    return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=NA))
   }
 
   # extract topology
-  tre_root <- ape::read.tree(fn_treefile_root)
   top_root <- ape::read.tree(fn_treefile_root)
   top_root$edge.length <- NULL
   top_root$node.label <- NULL
 
-  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], tree=ape::write.tree(tre_root), topology=ape::write.tree(top_root)))
+  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(top_root)))
 }
 
 stopCluster(nwcl)

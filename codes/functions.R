@@ -155,47 +155,19 @@ f_update_df_topology_rooted <- function(df_topology) {
   return(df_topology)
 }
 
-# function: plot the topologies across chromosomes
-f_plot_top_pos <- function(df, colour_scheme, fn_output) {
-  plot <- ggplot(df) +
-    geom_rect(aes(xmin=start, xmax=stop, ymin=y-0.6, ymax=y+0.6, fill=topology)) +
-    labs(x="Position", y="Chromosome", color="Topology") +
-    scale_y_continuous(breaks=unique(df$y), labels=unique(df$chr), expand=c(0.02, 0.02)) +
-    theme(axis.title.x=element_text(size=40, margin = margin(t=20, r=0, b=0, l=0)),
-          axis.title.y=element_text(size=40, margin = margin(t=0, r=20, b=0, l=0)),
-          axis.text.y=element_text(size=40),
-          axis.text.x=element_text(size=40),
-          panel.grid.major.y=element_blank(),
-          panel.grid.minor.y=element_blank(),
-          legend.title=element_text(size=30),
-          legend.text=element_text(size=30),
-          legend.key.size=unit(2,"cm"))
-
-  # update the colour scheme
-  if (!is.null(colour_scheme)) {
-      plot <- plot + scale_fill_manual(values=colour_scheme)
-  }
-    
-  # save the plot
-  tiff(filename=fn_output, units="px", width=3840, height=1080)
-  print(plot)
-  dev.off()
-}
-
 # function: calculate rootstrap in IQ-TREE
-f_calculate_rootstrap <- function(input, prefix, bs_type, bs, exe_iqtree) {
+f_calculate_rootstrap <- function(input, prefix, bootstrap_type, bootstrap_n, exe_iqtree) {
   iqtree_cmd <- paste(exe_iqtree,
                       "-s", input,
                       "--model-joint UNREST",
                       "--prefix", prefix,
-                      "-T 1 --quiet -redo")
+                      "-T 1 --quiet --redo")
 
-  if (!is.null(bs_type) && bs_type != "") {
-    if (tolower(bs_type) == "ufboot") {
-      iqtree_cmd <- paste(iqtree_cmd, "-bb", bs)
-    } else if (tolower(bs_type) == "nonparametric") {
-      iqtree_cmd <- paste(iqtree_cmd, "-b", bs)
-    }
+  # set bootstrap replicates
+  if (tolower(bootstrap_type) == "ufboot") {
+    iqtree_cmd <- paste(iqtree_cmd, "-B", bootstrap_n)
+  } else if (tolower(bootstrap_type) == "nonparametric") {
+    iqtree_cmd <- paste(iqtree_cmd, "-b", bootstrap_n)
   }
 
   system(iqtree_cmd)
