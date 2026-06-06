@@ -177,7 +177,7 @@ while (is_repeat == TRUE) {
   # update iterator
   iterator <- iterator + 1
   iterator_padded <- paste0(formatC(iterator, width=2, format="d", flag="0"))
-  iterator_padded_id <- paste0("d", iterator_padded)
+  iterator_padded_id <- paste0("s", iterator_padded)
 
   # output file
   split_iter_summary <- paste0("summary_iter", iterator_padded, ".tsv")
@@ -351,17 +351,13 @@ df_current$is_split <- NULL
 ```
 
 ```{r merge}
-write.table(c("",
-              "----------     Merge      --------"),
-              file=fn_log, quote=F, row.names=F, col.names=F, append=T)
+readr::write_lines(c("","-----------       Merge     ---------"), path=fn_log, append=T)
 
+# disable scientific notation 
 options(scipen=999)
 
 # add new columns to the table
 df_current$is_merged <- TRUE
-
-# exclude windows with NA AIC
-df_current$is_merged <- ifelse(is.na(df_current$aic), FALSE, TRUE)
 
 # create doSNOW cluster
 nwcl <- makeCluster(params$thread)
@@ -371,7 +367,7 @@ doSNOW::registerDoSNOW(nwcl)
 is_repeat <- TRUE
 iterator <- 0
 
-# skip the iteration if all windows cannot be merged together
+# iterate over windows
 while (is_repeat == TRUE) {
   # stop the iteration if none of the windows is newly merged
   if (all(df_current$is_merged == FALSE)) {
@@ -382,22 +378,29 @@ while (is_repeat == TRUE) {
   # update iterator
   iterator <- iterator + 1
   iterator_padded <- paste0(formatC(iterator, width=2, format="d", flag="0"))
-  iterator_padded_id <- paste0("m",iterator_padded)
+  iterator_padded_id <- paste0("m", iterator_padded)
 
   # output file
   merge_iter_summary <- paste0("summary_iter", iterator_padded, ".tsv")
   fn_df_current <- file.path(outdir_merge, merge_iter_summary)
   if (file.exists(fn_df_current) && !params$redo) {
     df_current <- data.table::fread(fn_df_current)
+
+    # print the total AIC
+    msg <- paste0("Total AIC after merge iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
+    log4r::info(fn_logger, msg)
+    cat(msg)
+
+    # move to the next iteration
     next
   }
 
-  # iterate over windows
-  df_merge_now <- foreach(i = 1:nrow(df_current), .combine='rbind') %dopar% {
-    # output file
+  # create all neighbouring windows
+  df_merge_now <- foreach(i=1:nrow(df_current), .combine='rbind') %dopar% {
     df_temp <- NULL
 
-    if (df_current$is_merged[i]) {
+    # store window pairs
+    if (df_current$is_merged[i] && !is.na(df_current$aic[i])) {
       if (i != nrow(df_current) && !is.na(df_current$aic[i+1])) {
         wmerge <- paste0(df_current$window[i], "x", gsub("window_","",df_current$window[i+1]))
         df_temp <- rbind(df_temp, data.table::data.table(window_one=df_current$window[i], window_two=df_current$window[i+1],
@@ -421,51 +424,54 @@ while (is_repeat == TRUE) {
   df_merge_now <- unique(df_merge_now)
 
   # iterate over windows that can be merged
-  fn_output <- paste0(outdir_merge, "iter", iterator_padded, "/aic_table.tsv")
+  df_output <- NULL
+  fn_output <- file.path(outdir_merge, paste0("iter", iterator_padded), "aic_table.tsv")
 
-  df_output <- foreach (i = 1:nrow(df_merge_now), .combine='rbind') %dopar% {
-    require(seqinr)
+  if (file.exists(fn_output) && !params$redo) {
+    df_output <- data.table::fread(fn_output)
+  
+  } else {
+    df_output <- foreach (i=1:nrow(df_merge_now), .combine='rbind') %dopar% {
+      # output directory
+      dir_output_iter <- file.path(outdir_merge, paste0("iter", iterator_padded), df_merge_now$window_one[i])
+      if (!dir.exists(dir_output_iter)) {
+        dir.create(dir_output_iter, recursive=T)
+      }
 
-    # output directory
-    dir_output_iter <- paste0(outdir_merge, "iter", iterator_padded, "/", df_merge_now$window_one[i], "/")
-    if (!dir.exists(dir_output_iter)) {
-      dir.create(dir_output_iter, recursive=T)
+      # output file
+      fn_merged_fasta <- file.path(dir_output_iter, paste0(df_merge_now$window_one[i], "_", df_merge_now$window_two[i], ".fa"))
+      if (!file.exists(fn_merged_fasta) || params$redo) {
+        # merge sequence
+        system(paste(params$exe_seqkit, "concat --full", df_merge_now$dir_one[i], df_merge_now$dir_two[i], ">", fn_merged_fasta))
+      }
+
+      # read FASTA file
+      seq <- Biostrings::readBStringSet(fn_merged_fasta)
+      seq_len <- Biostrings::width(seq)[1]
+
+      # output files
+      fn_iqtree <- paste0(fn_merged_fasta, ".iqtree")
+      if (!file.exists(fn_iqtree) || params$redo) {
+        f_iqtree2_single(fn_merged_fasta, "", seq_len, params$set_blmin, params$set_model, params$substitution_model, "", 0, params$exe_iqtree)
+      }
+
+      # extract AIC
+      aic <- f_extract_tree_aic(fn_iqtree)
+
+      # initial AIC
+      init_aic <- df_merge_now$aic_one[i] + df_merge_now$aic_two[i]
+
+      return(data.table::data.table(window_one=df_merge_now$window_one[i], window_two=df_merge_now$window_two[i],
+                                    aic_one=df_merge_now$aic_one[i], aic_two=df_merge_now$aic_two[i],
+                                    dir_one=df_merge_now$dir_one[i], dir_two=df_merge_now$dir_two[i],
+                                    window_merge=df_merge_now$window_merge[i], aic_merge=aic, delta_aic=aic-init_aic,
+                                    dir_merge=fn_merged_fasta, length_merge=seq_len))
     }
 
-    # output file
-    fn_merged_fasta <- paste0(dir_output_iter, df_merge_now$window_one[i], "_", df_merge_now$window_two[i], ".fa")
-    if (!file.exists(fn_merged_fasta) || params$redo) {
-      # merge sequence
-      system(paste(params$exe_seqkit, "concat --full", df_merge_now$dir_one[i], df_merge_now$dir_two[i], ">", fn_merged_fasta))
-    }
-
-    # read FASTA file
-    seq <- seqinr::read.fasta(fn_merged_fasta, whole.header = T)
-    seq_len <- length(seq[[1]])
-
-    # output files
-    fn_iqtree <- paste0(fn_merged_fasta, ".iqtree")
-    if (!file.exists(fn_iqtree) || params$redo) {
-      f_iqtree2_single(fn_merged_fasta, NULL, seq_len, params$set_blmin, params$set_model, params$substitution_model, "", 0, params$exe_iqtree)
-    }
-
-    # extract AIC
-    out <- f_window_tree_aic(fn_iqtree)
-    aic <- (2 * out$freeparams) - (2 * out$logl)
-
-    # initial AIC
-    init_aic <- df_merge_now$aic_one[i] + df_merge_now$aic_two[i]
-
-    return(data.table::data.table(window_one=df_merge_now$window_one[i], window_two=df_merge_now$window_two[i],
-                                  aic_one=df_merge_now$aic_one[i], aic_two=df_merge_now$aic_two[i],
-                                  dir_one=df_merge_now$dir_one[i], dir_two=df_merge_now$dir_two[i],
-                                  window_merge=df_merge_now$window_merge[i], aic_merge=aic, delta_aic=aic-init_aic,
-                                  dir_merge=fn_merged_fasta, length_merge=seq_len))
+    # sort the AIC from the lowest
+    df_output <- df_output %>% arrange(delta_aic)
+    data.table::fwrite(df_output, file=fn_output, row.names=F, col.names=T, quote=F, sep="\t")
   }
-
-  # sort the AIC from the lowest
-  df_output <- df_output %>% arrange(delta_aic)
-  data.table::fwrite(df_output, file=fn_output, row.names=F, col.names=T, quote=F, sep="\t")
 
   # set all is_merged to FALSE
   df_current$is_merged <- FALSE
@@ -473,7 +479,7 @@ while (is_repeat == TRUE) {
 
   # check if data.frame has zero row
   if (nrow(df_output) != 0) {
-    # extract the windows that have lowest AIC, change the df_current
+    # extract merged windows with the biggest AIC improvement and update df_current
     for (i in 1:nrow(df_output)) {
       # extract row
       id_row <- match(df_output$window_one[i], df_current$window)
@@ -484,8 +490,12 @@ while (is_repeat == TRUE) {
       }
 
       # update the row
-      df_current[id_row,] <- list(iter=iterator_padded_id, window=df_output$window_merge[i], length=df_output$length_merge[i],
-                                  aic=df_output$aic_merge[i], dir=df_output$dir_merge[i], is_merged=TRUE)
+      df_current[id_row,] <- list(iter=iterator_padded_id,
+                                  window=df_output$window_merge[i],
+                                  length=df_output$length_merge[i],
+                                  aic=df_output$aic_merge[i],
+                                  dir=df_output$dir_merge[i],
+                                  is_merged=TRUE)
       df_current <- df_current[-(id_row+1),]
     }
   }
@@ -499,8 +509,15 @@ while (is_repeat == TRUE) {
                   mutate(window=paste(basewindow, freq, sep="_")) %>%
                   select(-basewindow, -freq) 
 
+  # save output file
   data.table::fwrite(df_current, file=fn_df_current, row.names=F, col.names=T, quote=F, sep="\t")
-  log4r::info(fn_logger, paste("Merging: Iteration", iterator_padded, "Finished!"))
+  
+  # print the total AIC
+  msg <- paste0("Total AIC after merge iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
+  log4r::info(fn_logger, msg)
+  cat(msg)
+
+  rm(df_output)
 }
 
 stopCluster(nwcl)
@@ -508,9 +525,16 @@ stopCluster(nwcl)
 # save data.frame
 df_current$is_merged <- NULL
 data.table::fwrite(df_current, file=fn_winsum, row.names=F, col.names=T, quote=F, sep="\t")
+
+# print the final total AIC
+msg <- paste("Final total AIC:", sum(df_current$aic, na.rm=TRUE))
+log4r::info(fn_logger, msg)
+cat(msg)
 ```
 
 ```{r tree}
+readr::write_lines(c("","-----------    Gene Trees   ---------"), path=fn_log, append=T)
+
 # create doSNOW cluster
 nwcl <- makeCluster(params$thread)
 doSNOW::registerDoSNOW(nwcl)
