@@ -80,7 +80,7 @@ params <- list(
 
   set_blmin             = as.logical(f_get_param(cfg$set_blmin, TRUE)),
   set_model             = as.logical(f_get_param(cfg$set_model, FALSE)),
-  dna_model             = f_get_param(cfg$dna_model, ""),
+  substitution_model    = f_get_param(cfg$substitution_model, ""),
 
   bootstrap_type        = f_get_param(cfg$bootstrap_type, ""),
   bootstrap             = as.integer(f_get_param(cfg$bootstrap, 1000)),

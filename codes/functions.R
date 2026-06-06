@@ -1,7 +1,7 @@
-# functions for codes_empirical/2_variable_window_size
+# functions for running PhyloNOW
 
-# function: create data.frame for all windows
-f_create_perwindow_df_v2 <- function(numw, fasta_len, window_size) {
+# function: create data.frame for all window boundaries
+f_create_perwindow_df <- function(numw, fasta_len, window_size) {
   iterator <- 1:numw
   width <- ceiling(log(numw) / log(10)) + 1
 
@@ -16,11 +16,63 @@ f_create_perwindow_df_v2 <- function(numw, fasta_len, window_size) {
   }
 
   # create a data.frame
-  df_windows <- data.frame(window_name = paste0("window_", formatC(iterator, width=width, format="d", flag="0")),
-                           start = start_pos, end = end_pos)
+  df_windows <- data.frame(window_name=paste0("window_", formatC(iterator, width=width, format="d", flag="0")),
+                           start=start_pos, end=end_pos)
   df_windows$length <- df_windows$end - df_windows$start + 1
   
   return(df_windows)
+}
+
+# function: create per-window aligments
+f_extract_window <- function(outdir, seq, window_name, start, end) {
+  subfasta <- Biostrings::subseq(seq, start=start, end=end)
+  
+  # write FASTA file
+  fn_out <- file.path(outdir, paste0(window_name, ".fa"))
+  Biostrings::writeXStringSet(subfasta, filepath=fn_out)
+}
+
+# function: create window tree
+f_iqtree2_single <- function(input, outgroup, window_size, setblmin, setmodel, substitution_model, bootstrap_type, bootstrap_n, exe_iqtree2) {
+  iqtree_cmd <- paste(exe_iqtree2,
+                      "-s", input,
+                      "-T 1 --quiet --redo")
+  
+  # set outgroup
+  if (outgroup != ""){
+    iqtree_cmd <- paste(iqtree_cmd, "-o", paste(outgroup, collapse=","))
+  }
+  
+  # set minimum branch length
+  if (setblmin) {
+    iqtree_cmd <- paste(iqtree_cmd, "-blmin", 1/window_size)
+  }
+  
+  # set substitution model
+  if (setmodel && substitution_model != "") {
+    iqtree_cmd <- paste(iqtree_cmd, "-m", substitution_model)
+  }
+
+  # set bootstrap replicates
+  if (tolower(bootstrap_type) == "ufboot") {
+    iqtree_cmd <- paste(iqtree_cmd, "-B", bootstrap_n)
+  } else if (tolower(bootstrap_type) == "nonparametric") {
+    iqtree_cmd <- paste(iqtree_cmd, "-b", bootstrap_n)
+  }
+  
+  system(iqtree_cmd)
+}
+
+# function: extract AIC
+f_extract_tree_aic <- function(fn_iqtree) {
+  # extract log-likelihood and number of free parameters
+  logl <- gsub(" \\(.*\\)$", "", system(paste("grep '^Log-likelihood of the tree'", fn_iqtree), intern=T))
+  logl <- as.numeric(gsub("^.* ", "", logl))
+  freeparams <- as.numeric(gsub("^.* ", "", system(paste("grep '^Number of free parameters'", fn_iqtree), intern=T)))
+  
+  # calculate AIC
+  aic <- (2 * freeparams) - (2 * logl)
+  return(aic)
 }
 
 # function: check the number of informative sites

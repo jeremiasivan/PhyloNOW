@@ -24,7 +24,7 @@ params:
   # --- IQ-TREE2 Settings ---------------------------------------
   set_blmin: TRUE
   set_model: FALSE
-  dna_model: ""
+  substitution_model: ""
 
   bootstrap_type: ""
   bootstrap: 1000
@@ -51,15 +51,13 @@ suppressPackageStartupMessages(library(tidyverse))
 source(file.path(path.expand(params$codedir), "codes", "functions.R"), local=TRUE)
 
 # create outdir
-currentdir <- file.path(path.expand(params$outdir, params$prefix))
+currentdir <- file.path(path.expand(params$outdir), params$prefix)
 if (!dir.exists(currentdir)) {
   dir.create(currentdir, recursive = T)
 }
 
 # create log file
-fn_log <- paste0(params$prefix, ".log")
-fn_log <- file.path(currentdir, fn_log)
-
+fn_log <- file.path(currentdir, paste0(params$prefix, ".log"))
 log_appender <- log4r::file_appender(fn_log, append=TRUE, layout=log4r::default_log_layout())
 fn_logger <- log4r::logger(threshold="INFO", appenders=log_appender)
 if (params$redo) {
@@ -67,15 +65,15 @@ if (params$redo) {
 }
 
 if (!file.exists(fn_log)) {
-  readr::write_lines(c("PhyloNOW (Phylogenomic Non-Overlapping Windows)",
-                       "Developed by Jeremias Ivan",
-                       "---------------------------------------------------------"), path=fn_log)
+  readr::write_lines(c("####################################",
+                        "####          PhyloNOW         ####",
+                        "####################################"), path=fn_log)
 }
 
-knitr::opts_knit$set(root.dir = currentdir)
+knitr::opts_knit$set(root.dir=currentdir)
 ```
 
-```{r child = file.path(path.expand(params$codedir, "codes", "2_run.Rmd"))}
+```{r child = file.path(path.expand(params$codedir), "codes", "2_run.Rmd")}
 ```
 
 ```{r, include=FALSE}

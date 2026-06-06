@@ -17,9 +17,9 @@ exe_seqkit: "seqkit"                      # path to seqkit executable
 exe_iqtree: "iqtree2"                     # path to IQ-TREE2 executable
 
 # --- IQ-TREE2 Settings ---------------------------------------
-set_blmin:  TRUE                          # set minimum branch length per window (default: TRUE)
-set_model:  FALSE                         # set a fixed substitution model (default: FALSE)
-dna_model:  ""                            # substitution model to be used (only if set_model==TRUE; e.g., JC)
+set_blmin          :  TRUE                # set minimum branch length per window (default: TRUE)
+set_model          :  FALSE               # set a fixed substitution model (default: FALSE)
+substitution_model :  ""                  # substitution model to be used (only if set_model==TRUE; e.g., JC)
 
 bootstrap_type:  ""                       # "ufboot" or "nonparametric" (default: "" (no boostrap))
 bootstrap:       1000                     # number of bootstrap replicates (only if bootstrap_type!=""; default: 1000)
