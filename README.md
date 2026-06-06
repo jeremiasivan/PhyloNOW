@@ -52,7 +52,7 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
         ```
     -  Installing prerequisites
         ```
-        conda install -c conda-forge r-data.table r-doSNOW r-log4r r-optparse r-phangorn r-markdown r-seqinr r-tidyverse r-yaml bioconda::iqtree bioconda::seqkit
+        conda install -c conda-forge r-data.table r-doSNOW r-log4r r-optparse r-phangorn r-markdown r-tidyverse r-yaml bioconda::bioconductor-biostrings bioconda::iqtree bioconda::seqkit
         ```
 
 3. **Update the parameters in config.yaml** <br>

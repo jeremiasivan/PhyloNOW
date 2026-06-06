@@ -145,17 +145,17 @@ if (file.exists(fn_df_current) && !params$redo) {
 stopCluster(nwcl)
 
 # print the total AIC
-msg <- paste("Initial alignment AIC:", sum(df_current$aic))
+msg <- paste("Total AIC of initial alignment:", sum(df_current$aic, na.rm=TRUE))
 log4r::info(fn_logger, msg)
 cat(msg)
 ```
 
 ```{r split}
-write.table(c("",
-              "----------     Split     --------",
-              paste("Minimum number of informative sites:", params$min_informative_sites)),
-              file=fn_log, quote=F, row.names=F, col.names=F, append=T)
+readr::write_lines(c("", "----------      Split      ---------",
+                         paste("Minimum number of informative sites:", params$min_informative_sites)),
+                         path=fn_log, append=T)
 
+# set initial variables
 iterator <- 0
 is_repeat <- TRUE
 
@@ -166,12 +166,9 @@ doSNOW::registerDoSNOW(nwcl)
 # set initial length
 init_wlen <- df_current$length[1]
 
-# exclude windows with NA AIC
-df_current$is_split <- ifelse(is.na(df_current$aic), FALSE, TRUE)
-
 # iterate over windows
 while (is_repeat == TRUE) {
-  # skip the iteration if all windows are not divisible
+  # stop the iteration if all windows are not divisible
   if (all(df_current$is_split == FALSE)) {
     is_repeat <- FALSE
     break
@@ -180,27 +177,40 @@ while (is_repeat == TRUE) {
   # update iterator
   iterator <- iterator + 1
   iterator_padded <- paste0(formatC(iterator, width=2, format="d", flag="0"))
-  iterator_padded_id <- paste0("d",iterator_padded)
+  iterator_padded_id <- paste0("d", iterator_padded)
 
   # output file
   split_iter_summary <- paste0("summary_iter", iterator_padded, ".tsv")
   fn_df_current <- file.path(outdir_split, split_iter_summary)
+
   if (file.exists(fn_df_current) && !params$redo) {
     df_current <- data.table::fread(fn_df_current)
+
+    # print the total AIC
+    msg <- paste0("Total AIC after split iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
+    log4r::info(fn_logger, msg)
+    cat(msg)
+    
+    # move to the next iteration
     next
   }
 
   # iterate over windows
-  df_output <- foreach (i = 1:nrow(df_current), .combine='rbind') %dopar% {
+  df_output <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
     require(dplyr)
 
     # skip the window if not divisible
-    if (!df_current$is_split[i]) {
-      return(data.table::data.table(iter=df_current$iter[i], window=df_current$window[i], length=df_current$length[i], aic=df_current$aic[i], dir=df_current$dir[i], is_split=FALSE))
+    if (!df_current$is_split[i] || is.na(df_current$aic[i])) {
+      return(data.table::data.table(iter=df_current$iter[i],
+                                    window=df_current$window[i],
+                                    length=df_current$length[i],
+                                    aic=df_current$aic[i],
+                                    dir=df_current$dir[i],
+                                    is_split=FALSE))
     }
 
     # output directory
-    dir_output <- paste0(outdir_split, "iter", iterator_padded, "/", df_current$window[i], "/")
+    dir_output <- file.path(outdir_split, paste0("iter", iterator_padded), df_current$window[i])
     if (!dir.exists(dir_output)) {
       dir.create(dir_output, recursive=T)
     }
@@ -210,19 +220,24 @@ while (is_repeat == TRUE) {
                                                         length_one=numeric(), length_two=numeric(),
                                                         aic_one=numeric(), aic_two=numeric(),
                                                         dir_one=character(), dir_two=character())
-    fn_output <- paste0(dir_output, "aic_table.tsv")
+    fn_output <- file.path(dir_output, "aic_table.tsv")
 
     if (file.exists(fn_output) && !params$redo) {
       df_prop <- data.table::fread(fn_output)
 
       if (nrow(df_prop) == 0) {
-        return(data.table::data.table(iter=df_current$iter[i], window=df_current$window[i], length=df_current$length[i], aic=df_current$aic[i], dir=df_current$dir[i], is_split=FALSE))
+        return(data.table::data.table(iter=df_current$iter[i],
+                                      window=df_current$window[i],
+                                      length=df_current$length[i],
+                                      aic=df_current$aic[i],
+                                      dir=df_current$dir[i],
+                                      is_split=FALSE))
       }
 
     } else {
       # read FASTA
-      seq <- seqinr::read.fasta(df_current$dir[i], whole.header = T)
-      ln_seq <- length(seq[[1]])
+      seq <- Biostrings::readBStringSet(df_current$dir[i])
+      seq_len <- Biostrings::width(seq)[1]
 
       # extract AIC
       for (prop in params$split_prop) {
@@ -230,24 +245,24 @@ while (is_repeat == TRUE) {
         window_two <- paste0(df_current$window[i], "_", gsub("\\.","",prop), "_2")
 
         # extract the alignment
-        midpoint <- ceiling(prop*ln_seq)
-        f_perwindow_run(dir_output, seq, window_one, 1, midpoint)
-        f_perwindow_run(dir_output, seq, window_two, midpoint+1, ln_seq)
+        midpoint <- ceiling(prop*seq_len)
+        f_extract_window(dir_output, seq, window_one, 1, midpoint)
+        f_extract_window(dir_output, seq, window_two, midpoint+1, seq_len)
 
-        # check -blmin
+        # check the maximum bound of -blmin
         seq_len_one <- midpoint
-        seq_len_two <- ln_seq - midpoint
+        seq_len_two <- seq_len - midpoint
         if (1/seq_len_one >= 0.1 || 1/seq_len_two >= 0.1) {
           next
         }
 
         # run IQ-TREE2
-        fn_fasta_one <- paste0(dir_output, window_one, ".fa")
-        fn_fasta_two <- paste0(dir_output, window_two, ".fa")
-        f_iqtree2_single(fn_fasta_one, NULL, seq_len_one, params$set_blmin, params$set_model, params$substitution_model, "", 0, params$exe_iqtree)
-        f_iqtree2_single(fn_fasta_two, NULL, seq_len_two, params$set_blmin, params$set_model, params$substitution_model, "", 0, params$exe_iqtree)
+        fn_fasta_one <- file.path(dir_output, paste0(window_one, ".fa"))
+        fn_fasta_two <- file.path(dir_output, paste0(window_two, ".fa"))
+        f_iqtree2_single(fn_fasta_one, "", seq_len_one, params$set_blmin, params$set_model, params$substitution_model, "", 0, params$exe_iqtree)
+        f_iqtree2_single(fn_fasta_two, "", seq_len_two, params$set_blmin, params$set_model, params$substitution_model, "", 0, params$exe_iqtree)
 
-        # extract AIC
+        # extract AIC from IQ-TREE output files
         fn_iqtree_one <- paste0(fn_fasta_one, ".iqtree")
         fn_iqtree_two <- paste0(fn_fasta_two, ".iqtree")
         if (!all(file.exists(fn_iqtree_one, fn_iqtree_two))) {
@@ -259,10 +274,9 @@ while (is_repeat == TRUE) {
           next
         }
 
-        out_one <- f_window_tree_aic(fn_iqtree_one)
-        out_two <- f_window_tree_aic(fn_iqtree_two)
-        aic_one <- (2 * out_one$freeparams) - (2 * out_one$logl)
-        aic_two <- (2 * out_two$freeparams) - (2 * out_two$logl)
+        # extract AIC for each window
+        aic_one <- f_extract_tree_aic(fn_iqtree_one)
+        aic_two <- f_extract_tree_aic(fn_iqtree_two)
 
         # update data.frame
         df_prop <- rbind(df_prop, data.table::data.table(prop=prop, window_one=window_one, window_two=window_two,
@@ -277,17 +291,35 @@ while (is_repeat == TRUE) {
 
     # extract the best AIC score
     if (nrow(df_prop) == 0) {
-      return(data.table::data.table(iter=df_current$iter[i], window=df_current$window[i], length=df_current$length[i], aic=df_current$aic[i], dir=df_current$dir[i], is_split=FALSE))
+      return(data.table::data.table(iter=df_current$iter[i],
+                                    window=df_current$window[i],
+                                    length=df_current$length[i],
+                                    aic=df_current$aic[i],
+                                    dir=df_current$dir[i],
+                                    is_split=FALSE))
     }
 
     df_output_min_aic <- df_prop %>% mutate(sum_aic=aic_one+aic_two) %>% filter(sum_aic==min(sum_aic))
     if (df_output_min_aic$sum_aic[1] < df_current$aic[i]) {
-      return(rbind(data.table::data.table(iter=iterator_padded_id, window=df_output_min_aic$window_one[1], length=df_output_min_aic$length_one[1],
-                                          aic=df_output_min_aic$aic_one[1], dir=df_output_min_aic$dir_one[1], is_split=TRUE),
-                   data.table::data.table(iter=iterator_padded_id, window=df_output_min_aic$window_two[1], length=df_output_min_aic$length_two[1],
-                                          aic=df_output_min_aic$aic_two[1], dir=df_output_min_aic$dir_two[1], is_split=TRUE)))
+      return(rbind(data.table::data.table(iter=iterator_padded_id,
+                                          window=df_output_min_aic$window_one[1],
+                                          length=df_output_min_aic$length_one[1],
+                                          aic=df_output_min_aic$aic_one[1],
+                                          dir=df_output_min_aic$dir_one[1],
+                                          is_split=TRUE),
+                   data.table::data.table(iter=iterator_padded_id,
+                                          window=df_output_min_aic$window_two[1],
+                                          length=df_output_min_aic$length_two[1],
+                                          aic=df_output_min_aic$aic_two[1],
+                                          dir=df_output_min_aic$dir_two[1],
+                                          is_split=TRUE)))
     } else {
-      return(data.table::data.table(iter=df_current$iter[i], window=df_current$window[i], length=df_current$length[i], aic=df_current$aic[i], dir=df_current$dir[i], is_split=FALSE))
+      return(data.table::data.table(iter=df_current$iter[i],
+                                         window=df_current$window[i],
+                                         length=df_current$length[i],
+                                         aic=df_current$aic[i],
+                                         dir=df_current$dir[i],
+                                         is_split=FALSE))
     }
   }
 
@@ -303,7 +335,11 @@ while (is_repeat == TRUE) {
 
   # save output file
   data.table::fwrite(df_current, file=fn_df_current, row.names=F, col.names=T, quote=F, sep="\t")
-  log4r::info(fn_logger, paste("split: Iteration", iterator_padded, "Finished!"))
+
+  # print the total AIC
+  msg <- paste0("Total AIC after split iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
+  log4r::info(fn_logger, msg)
+  cat(msg)
 
   rm(df_output)
 }

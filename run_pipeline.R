@@ -91,7 +91,7 @@ params <- list(
 
   input_aln             = cfg$input_aln,
   init_wsize            = as.integer(f_get_param(cfg$init_wsize, NA)),
-  division_prop         = unlist(f_get_param(cfg$division_prop, list(0.25, 0.5, 0.75))),
+  split_prop            = unlist(f_get_param(cfg$split_prop, list(0.25, 0.5, 0.75))),
   min_informative_sites = as.integer(f_get_param(cfg$min_informative_sites, 1))
 )
 

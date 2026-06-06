@@ -31,5 +31,5 @@ run_midpoint_root: FALSE                  # run midpoint rooting for each gene t
 # --- NOW Analysis --------------------------------------------
 input_aln:      "alignment.fasta"         # path to input FASTA alignment
 init_wsize:     NA                        # initial window size (bp) (default: NA (full alignment length))
-division_prop:  [0.25, 0.5, 0.75]         # split configurations to test at each splitting step (default: 0.25, 0.5, 0.75)
+split_prop:     [0.25, 0.5, 0.75]         # split configurations to test at each splitting step (default: 0.25, 0.5, 0.75)
 min_informative_sites: 1                  # minimum parsimony-informative sites per window (default: 1)
