@@ -64,6 +64,13 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
 
     In UNIX-based operating systems (e.g., Linux and MacOS), it is advisable to use `nohup` or `tmux` to run the whole pipeline. For Windows, you can use `psmux`. 
 
+5. **Summarise multiple PhyloNOW runs (optional)** <br>
+    - Store all PhyloNOW output folders in the same folder
+    - Run `summarise_multiple_runs.R`
+        ```
+        Rscript summarise_multiple_runs.R -i /home/user/phyloNOW_runs/ -o /home/user/phyloNOW_summary/
+        ```
+
 ---
 ## <a id="refs">References</a>
 1. Minh, B.Q., et al. (<a href="https://doi.org/10.1093/molbev/msaa015">2020</a>). **IQ-TREE 2: New Models and Efficient Methods for Phylogenetic Inference in the Genomic Era**. *Molecular Biology and Evolution*, *37*(5), 1530–1534.

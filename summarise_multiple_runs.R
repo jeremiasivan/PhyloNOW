@@ -47,18 +47,18 @@ if (!dir.exists(output_dir)) {
 }
 
 # --- Output files --------------------------------------------
-fn_summary <- file.path(output_dir, "all_summary.tsv")
+fn_summary             <- file.path(output_dir, "all_summary.tsv")
 fn_correlation_summary <- file.path(output_dir, "correlation_summary.tsv")
 
-fn_wsize_coord <- file.path(output_dir, "wsize_x_coordinates.tiff")
-fn_top_coord <- file.path(output_dir, "topology_x_coordinates.tiff")
+fn_wsize_coord      <- file.path(output_dir, "wsize_x_coordinates.tiff")
+fn_top_coord        <- file.path(output_dir, "topology_x_coordinates.tiff")
 fn_top_coord_highbs <- file.path(output_dir, "topology_x_coordinates_highbs.tiff")
 
-fn_chrlen_wsize_mean <- file.path(output_dir, "chrlen_x_wsize_mean.tiff")
+fn_chrlen_wsize_mean   <- file.path(output_dir, "chrlen_x_wsize_mean.tiff")
 fn_chrlen_wsize_median <- file.path(output_dir, "chrlen_x_wsize_median.tiff")
 
 # --- Visualise variation across coordinates -------------------
-df_visualisation <- data.table::data.table()
+df_visualisation   <- data.table::data.table()
 df_visualisation_2 <- data.table::data.table()
 df_visualisation_3 <- data.table::data.table()
 
@@ -83,8 +83,8 @@ for (input in list_input) {
 
     # convert the lengths into genomic positions
     df_topsum <- df_topsum %>% mutate(start = lag(cumsum(length), default=0)+1,
-                                      stop = start+length-1,
-                                      chr = input)
+                                      stop  = start+length-1,
+                                      chr   = input)
     df_winsum <- data.table::data.table(pos = seq(1, sum(df_winsum$length)),
                                         len = rep(df_winsum$length, times=df_winsum$length),
                                         chr = input)
@@ -97,26 +97,33 @@ for (input in list_input) {
 # save data.frame
 data.table::fwrite(df_visualisation, file=fn_summary, sep="\t", quote=F)
 
+# --- Dynamic plot parameters ---------------------------------
+n_chr <- length(unique(df_visualisation$chr))
+ 
+# font sizes: scale down as chromosome count grows (source: Claude)
+base_font  <- max(12, min(40, round(40 - (n_chr - 5) * 1.2)))   # axis titles
+label_font <- max(10, min(30, round(30 - (n_chr - 5) * 0.9)))   # axis labels / legends
+
 # --- Topologies across genomic coordinates -------------------
 df_visualisation$chr <- factor(df_visualisation$chr, levels=stringr::str_sort(unique(df_visualisation$chr), numeric=T, decreasing=T))
-df_visualisation$y <- as.numeric(df_visualisation$chr) * 1.5
+df_visualisation$y   <- as.numeric(df_visualisation$chr) * 1.5
 
 # plot topologies across genomic coordinates (all gene trees) 
 plot <- ggplot(df_visualisation) +
     geom_rect(aes(xmin=start, xmax=stop, ymin=y-0.6, ymax=y+0.6, fill=topology)) +
     labs(x="Genomic Position (bp)", y="Chromosome", fill="Topology") +
     scale_y_continuous(breaks=unique(df_visualisation$y), labels=unique(df_visualisation$chr), expand=c(0.02, 0.02)) +
-    theme(axis.title.x=element_text(size=40, margin = margin(t=20, r=0, b=0, l=0)),
-          axis.title.y=element_text(size=40, margin = margin(t=0, r=20, b=0, l=0)),
-          axis.text.y=element_text(size=40),
-          axis.text.x=element_text(size=40),
+    theme(axis.title.x=element_text(size=base_font),
+          axis.title.y=element_text(size=base_font),
+          axis.text.y=element_text(size=label_font),
+          axis.text.x=element_text(size=label_font),
           panel.grid.major.y=element_blank(),
           panel.grid.minor.y=element_blank(),
-          legend.title=element_text(size=30),
-          legend.text=element_text(size=30),
+          legend.title=element_text(size=label_font),
+          legend.text=element_text(size=label_font),
           legend.key.size=unit(2,"cm"))
 
-tiff(filename=fn_top_coord, units="px", width=3840, height=1080)
+tiff(filename=fn_top_coord, units="px", width=1920, height=1080)
 print(plot)
 dev.off()
 
@@ -127,17 +134,17 @@ plot <- ggplot(df_visualisation) +
     geom_rect(aes(xmin=start, xmax=stop, ymin=y-0.6, ymax=y+0.6, fill=topology)) +
     labs(x="Genomic Position (bp)", y="Chromosome", fill="Topology") +
     scale_y_continuous(breaks=unique(df_visualisation$y), labels=unique(df_visualisation$chr), expand=c(0.02, 0.02)) +
-    theme(axis.title.x=element_text(size=40, margin = margin(t=20, r=0, b=0, l=0)),
-          axis.title.y=element_text(size=40, margin = margin(t=0, r=20, b=0, l=0)),
-          axis.text.y=element_text(size=40),
-          axis.text.x=element_text(size=40),
+    theme(axis.title.x=element_text(size=base_font),
+          axis.title.y=element_text(size=base_font),
+          axis.text.y=element_text(size=label_font),
+          axis.text.x=element_text(size=label_font),
           panel.grid.major.y=element_blank(),
           panel.grid.minor.y=element_blank(),
-          legend.title=element_text(size=30),
-          legend.text=element_text(size=30),
+          legend.title=element_text(size=label_font),
+          legend.text=element_text(size=label_font),
           legend.key.size=unit(2,"cm"))
 
-tiff(filename=fn_top_coord_highbs, units="px", width=3840, height=1080)
+tiff(filename=fn_top_coord_highbs, units="px", width=1920, height=1080)
 print(plot)
 dev.off()
 
@@ -145,20 +152,20 @@ dev.off()
 plot <- ggplot(df_visualisation_2, aes(x=pos, y=len)) +
   geom_point(linewidth=1, alpha=0.8) +
   scale_y_log10(labels=scales::label_number(trim = TRUE, accuracy = NULL)) +
-  facet_wrap(.~chr, ncol=2) +
+  facet_wrap(.~chr) +
   xlab("Genomic Position (bp)") + ylab("Block Length (bp)") +
   theme(
-      axis.title.x=element_text(size=40),
-      axis.title.y=element_text(size=40),
-      axis.text.y=element_text(size=30),
-      axis.text.x=element_text(size=30),
-      strip.text=element_text(size=30),
-      legend.title=element_text(size=30),
-      legend.text=element_text(size=30),
+      axis.title.x=element_text(size=base_font),
+      axis.title.y=element_text(size=base_font),
+      axis.text.y=element_text(size=label_font),
+      axis.text.x=element_text(size=label_font),
+      strip.text=element_text(size=label_font),
+      legend.title=element_text(size=label_font),
+      legend.text=element_text(size=label_font),
       legend.key.size=unit(2,"cm")
     )
 
-tiff(filename=fn_wsize_coord, units="px", width=4000, height=8000)
+tiff(filename=fn_wsize_coord, units="px", width=1920, height=1080)
 print(plot)
 dev.off()
 
@@ -204,16 +211,16 @@ plot <- ggplot(df_visualisation_3) +
                                  Logarithmic="#619cff",
                                  Asymptote="#f8766d")) +
   theme(
-    axis.title.x=element_text(size=40),
-    axis.title.y=element_text(size=40),
-    axis.text.y=element_text(size=30),
-    axis.text.x=element_text(size=30),
-    legend.title=element_text(size=30),
-    legend.text=element_text(size=30),
+    axis.title.x=element_text(size=base_font),
+    axis.title.y=element_text(size=base_font),
+    axis.text.y=element_text(size=label_font),
+    axis.text.x=element_text(size=label_font),
+    legend.title=element_text(size=label_font),
+    legend.text=element_text(size=label_font),
     legend.key.size=unit(2,"cm")
   )
 
-tiff(filename=fn_chrlen_wsize_mean, units="px", width=1080, height=720)
+tiff(filename=fn_chrlen_wsize_mean, units="px", width=1920, height=1080)
 print(plot)
 dev.off()
 
@@ -247,16 +254,16 @@ plot <- ggplot(df_visualisation_3) +
                                  Logarithmic="#619cff",
                                  Asymptote="#f8766d")) +
   theme(
-    axis.title.x=element_text(size=40),
-    axis.title.y=element_text(size=40),
-    axis.text.y=element_text(size=30),
-    axis.text.x=element_text(size=30),
-    legend.title=element_text(size=30),
-    legend.text=element_text(size=30),
+    axis.title.x=element_text(size=base_font),
+    axis.title.y=element_text(size=base_font),
+    axis.text.y=element_text(size=label_font),
+    axis.text.x=element_text(size=label_font),
+    legend.title=element_text(size=label_font),
+    legend.text=element_text(size=label_font),
     legend.key.size=unit(2,"cm")
   )
 
-tiff(filename=fn_chrlen_wsize_mean, units="px", width=1080, height=720)
+tiff(filename=fn_chrlen_wsize_median, units="px", width=1920, height=1080)
 print(plot)
 dev.off()
 
