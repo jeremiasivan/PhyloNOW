@@ -12,6 +12,7 @@ sapply(c(outdir_fasta, outdir_split, outdir_merge, outdir_final), function(x) {
   if (!dir.exists(x)) { dir.create(x, recursive=T) }})
 
 # output summary files
+fn_aicsum <- file.path(currentdir, paste0(params$prefix, ".aicsum"))
 fn_winsum <- file.path(currentdir, paste0(params$prefix, ".winsum"))
 fn_topsum <- file.path(currentdir, paste0(params$prefix, ".topsum"))
 fn_rootstrap <- file.path(currentdir, paste0(params$prefix, ".rootstrap"))
@@ -150,6 +151,9 @@ if (file.exists(fn_df_current) && !params$redo) {
 
 stopCluster(nwcl)
 
+# store the initial AIC
+df_aic <- data.table::data.table(step="initial", iter="00", aic=sum(df_current$aic, na.rm=TRUE))
+
 # print the total AIC
 msg <- paste("Total AIC of initial alignment:", sum(df_current$aic, na.rm=TRUE))
 log4r::info(fn_logger, msg)
@@ -196,6 +200,9 @@ while (is_repeat == TRUE) {
     msg <- paste0("Total AIC after split iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
     log4r::info(fn_logger, msg)
     cat(msg)
+
+    # update the AIC data.frame
+    df_aic <- rbind(df_aic, data.table::data.table(step="split", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
     
     # move to the next iteration
     next
@@ -347,6 +354,9 @@ while (is_repeat == TRUE) {
   log4r::info(fn_logger, msg)
   cat(msg)
 
+  # update the AIC data.frame
+  df_aic <- rbind(df_aic, data.table::data.table(step="split", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
+
   rm(df_output)
 }
 
@@ -396,6 +406,9 @@ while (is_repeat == TRUE) {
     msg <- paste0("Total AIC after merge iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
     log4r::info(fn_logger, msg)
     cat(msg)
+
+    # update the AIC data.frame
+    df_aic <- rbind(df_aic, data.table::data.table(step="merge", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
 
     # move to the next iteration
     next
@@ -523,6 +536,9 @@ while (is_repeat == TRUE) {
   log4r::info(fn_logger, msg)
   cat(msg)
 
+  # update the AIC data.frame
+  df_aic <- rbind(df_aic, data.table::data.table(step="merge", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
+
   rm(df_output)
 }
 
@@ -530,12 +546,28 @@ stopCluster(nwcl)
 
 # save data.frame
 df_current$is_merged <- NULL
+data.table::fwrite(df_aic, file=fn_aicsum, row.names=F, col.names=T, quote=F, sep="\t")
 data.table::fwrite(df_current, file=fn_winsum, row.names=F, col.names=T, quote=F, sep="\t")
 
 # print the final total AIC
 msg <- paste("Final total AIC:", sum(df_current$aic, na.rm=TRUE))
 log4r::info(fn_logger, msg)
 cat(msg)
+```
+
+## Plot of total AIC changes across iterations
+```{r, out.width="100%", echo=FALSE}
+# create a sequential x-axis
+df_aic$x <- 1:nrow(df_aic)
+
+# visualisation
+ggplot(df_aic, aes(x=x, y=aic, colour=type, group=1)) +
+  geom_line(color="grey70", linewidth=1.2) +
+  geom_point(size=4) +
+  scale_x_continuous(breaks=df_aic$x, labels=df_aic$iter) +
+  scale_color_manual(values=c(init="black", split="#378ADD", merge="#1D9E75")) +
+  labs(x="Step", y="AIC", color="Analysis") +
+  theme_minimal(base_size=16)
 ```
 
 ```{r tree}
