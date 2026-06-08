@@ -10,11 +10,6 @@
 suppressPackageStartupMessages(library(optparse))
 suppressPackageStartupMessages(library(tidyverse))
 
-# create a function to retrieve parameter value with default
-f_get_param <- function(value, default) {
-  ifelse (is.null(value) || value=="", default, value)
-}
-
 # --- Argument parsing ----------------------------------------
 option_list <- list(
   make_option(c("-i", "--input"), type="character", default=NULL,
@@ -50,9 +45,9 @@ if (!dir.exists(output_dir)) {
 fn_summary             <- file.path(output_dir, "all_summary.tsv")
 fn_correlation_summary <- file.path(output_dir, "correlation_summary.tsv")
 
-fn_wsize_coord      <- file.path(output_dir, "wsize_x_coordinates.tiff")
 fn_top_coord        <- file.path(output_dir, "topology_x_coordinates.tiff")
 fn_top_coord_highbs <- file.path(output_dir, "topology_x_coordinates_highbs.tiff")
+fn_wsize_coord      <- file.path(output_dir, "wsize_x_coordinates.tiff")
 
 fn_chrlen_wsize_mean   <- file.path(output_dir, "chrlen_x_wsize_mean.tiff")
 fn_chrlen_wsize_median <- file.path(output_dir, "chrlen_x_wsize_median.tiff")
@@ -97,13 +92,6 @@ for (input in list_input) {
 # save data.frame
 data.table::fwrite(df_visualisation, file=fn_summary, sep="\t", quote=F)
 
-# --- Dynamic plot parameters ---------------------------------
-n_chr <- length(unique(df_visualisation$chr))
- 
-# font sizes: scale down as chromosome count grows (source: Claude)
-base_font  <- max(12, min(40, round(40 - (n_chr - 5) * 1.2)))   # axis titles
-label_font <- max(10, min(30, round(30 - (n_chr - 5) * 0.9)))   # axis labels / legends
-
 # --- Topologies across genomic coordinates -------------------
 df_visualisation$chr <- factor(df_visualisation$chr, levels=stringr::str_sort(unique(df_visualisation$chr), numeric=T, decreasing=T))
 df_visualisation$y   <- as.numeric(df_visualisation$chr) * 1.5
@@ -113,15 +101,13 @@ plot <- ggplot(df_visualisation) +
     geom_rect(aes(xmin=start, xmax=stop, ymin=y-0.6, ymax=y+0.6, fill=topology)) +
     labs(x="Genomic Position (bp)", y="Chromosome", fill="Topology") +
     scale_y_continuous(breaks=unique(df_visualisation$y), labels=unique(df_visualisation$chr), expand=c(0.02, 0.02)) +
-    theme(axis.title.x=element_text(size=base_font),
-          axis.title.y=element_text(size=base_font),
-          axis.text.y=element_text(size=label_font),
-          axis.text.x=element_text(size=label_font),
-          panel.grid.major.y=element_blank(),
-          panel.grid.minor.y=element_blank(),
-          legend.title=element_text(size=label_font),
-          legend.text=element_text(size=label_font),
-          legend.key.size=unit(2,"cm"))
+    theme(axis.text.x = element_text(size=40),
+          axis.title.x = element_text(size=40, margin=margin(t=10, r=0, b=0, l=0)),
+          axis.text.y = element_text(size=40),
+          axis.title.y = element_text(size=40, margin=margin(t=0, r=10, b=0, l=0)),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          legend.position = "none")
 
 tiff(filename=fn_top_coord, units="px", width=1920, height=1080)
 print(plot)
@@ -134,15 +120,13 @@ plot <- ggplot(df_visualisation) +
     geom_rect(aes(xmin=start, xmax=stop, ymin=y-0.6, ymax=y+0.6, fill=topology)) +
     labs(x="Genomic Position (bp)", y="Chromosome", fill="Topology") +
     scale_y_continuous(breaks=unique(df_visualisation$y), labels=unique(df_visualisation$chr), expand=c(0.02, 0.02)) +
-    theme(axis.title.x=element_text(size=base_font),
-          axis.title.y=element_text(size=base_font),
-          axis.text.y=element_text(size=label_font),
-          axis.text.x=element_text(size=label_font),
-          panel.grid.major.y=element_blank(),
-          panel.grid.minor.y=element_blank(),
-          legend.title=element_text(size=label_font),
-          legend.text=element_text(size=label_font),
-          legend.key.size=unit(2,"cm"))
+    theme(axis.text.x = element_text(size=40),
+          axis.title.x = element_text(size=40, margin=margin(t=10, r=0, b=0, l=0)),
+          axis.text.y = element_text(size=40),
+          axis.title.y = element_text(size=40, margin=margin(t=0, r=10, b=0, l=0)),
+          panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          legend.position = "none")
 
 tiff(filename=fn_top_coord_highbs, units="px", width=1920, height=1080)
 print(plot)
@@ -155,14 +139,12 @@ plot <- ggplot(df_visualisation_2, aes(x=pos, y=len)) +
   facet_wrap(.~chr) +
   xlab("Genomic Position (bp)") + ylab("Block Length (bp)") +
   theme(
-      axis.title.x=element_text(size=base_font),
-      axis.title.y=element_text(size=base_font),
-      axis.text.y=element_text(size=label_font),
-      axis.text.x=element_text(size=label_font),
-      strip.text=element_text(size=label_font),
-      legend.title=element_text(size=label_font),
-      legend.text=element_text(size=label_font),
-      legend.key.size=unit(2,"cm")
+      axis.text.x = element_text(size=30),
+      axis.title.x = element_text(size=30, margin=margin(t=10, r=0, b=0, l=0)),
+      axis.text.y = element_text(size=30),
+      axis.title.y = element_text(size=30, margin=margin(t=0, r=10, b=0, l=0)),
+      strip.text = element_text(size=30),
+      legend.position = "none"
     )
 
 tiff(filename=fn_wsize_coord, units="px", width=1920, height=1080)
@@ -177,6 +159,8 @@ pseudo_r2 <- function(fit, y) {
 
 # output table
 df_correlation <- data.table::data.table(wsize=character(), model=character(), r2=numeric(), aic=numeric())
+models <- c("linear", "logarithmic", "asymptotic")
+colour_map <- c(linear="#00ba38", logarithmic="#619cff", asymptotic="#f8766d")
 
 # --- Mean window size vs chromosome length -------------------
 fit_lin  <- lm(wsize_mean ~ chr, data=df_visualisation_3)
@@ -187,6 +171,11 @@ fit_asym <- nls(wsize_mean ~ SSasymp(chr, Asym, R0, lrc), data=df_visualisation_
 df_correlation <- rbind(df_correlation, data.table::data.table(wsize="mean", model="linear", r2=pseudo_r2(fit_lin, df_visualisation_3$wsize_mean), aic=AIC(fit_lin)),
                                         data.table::data.table(wsize="mean", model="logarithmic", r2=pseudo_r2(fit_log, df_visualisation_3$wsize_mean), aic=AIC(fit_log)),
                                         data.table::data.table(wsize="mean", model="asymptotic", r2=pseudo_r2(fit_asym, df_visualisation_3$wsize_mean), aic=AIC(fit_asym)))
+
+# set linetypes and alphas based on best model (lowest AIC)
+best_model <- df_correlation %>% filter(wsize == "mean") %>% slice(which.min(aic)) %>% pull(model)
+linetype_map <- setNames(ifelse(models == best_model, "solid", "dashed"), models)
+alpha_map <- setNames(ifelse(models == best_model, 1.0, 0.7), models)
 
 # create a sequence of x values for plotting the fitted lines
 x_seq <- seq(min(df_visualisation_3$chr), max(df_visualisation_3$chr), length.out=200)
@@ -199,25 +188,26 @@ df_lines <- data.frame(
     predict(fit_log, newdata=newdata),
     predict(fit_asym, newdata=newdata)
   ),
-  model = rep(c("Linear", "Logarithmic", "Asymptote"), each=200)
+  model = rep(models, each=200)
 )
 
 # visualisation
 plot <- ggplot(df_visualisation_3) +
   geom_point(aes(x=chr/1000000, y=wsize_mean), size=5) +
-  geom_line(data=df_lines, aes(colour=model, x=x/1000000, y=y), alpha=0.7, linewidth=2) +
+  geom_line(data=df_lines, aes(colour=model, x=x/1000000, y=y, linetype=model, alpha=model), linewidth=2) +
   labs(x="Chromosome length (Mb)", y="Average window size (bp)", color="Model") +
-  scale_colour_manual(values = c(Linear="#00ba38",
-                                 Logarithmic="#619cff",
-                                 Asymptote="#f8766d")) +
+  scale_colour_manual(values=colour_map) +
+  scale_linetype_manual(values=linetype_map) +
+  scale_alpha_manual(values=alpha_map) +
+  guides(linetype="none", alpha="none") +
   theme(
-    axis.title.x=element_text(size=base_font),
-    axis.title.y=element_text(size=base_font),
-    axis.text.y=element_text(size=label_font),
-    axis.text.x=element_text(size=label_font),
-    legend.title=element_text(size=label_font),
-    legend.text=element_text(size=label_font),
-    legend.key.size=unit(2,"cm")
+    axis.text.x = element_text(size=40),
+    axis.title.x = element_text(size=40, margin=margin(t=10, r=0, b=0, l=0)),
+    axis.text.y = element_text(size=40),
+    axis.title.y = element_text(size=40, margin=margin(t=0, r=10, b=0, l=0)),
+    legend.title = element_text(size=40),
+    legend.text = element_text(size=30),
+    legend.key.size = unit(2,"cm")
   )
 
 tiff(filename=fn_chrlen_wsize_mean, units="px", width=1920, height=1080)
@@ -234,6 +224,11 @@ df_correlation <- rbind(df_correlation, data.table::data.table(wsize="median", m
                                         data.table::data.table(wsize="median", model="logarithmic", r2=pseudo_r2(fit_log, df_visualisation_3$wsize_median), aic=AIC(fit_log)),
                                         data.table::data.table(wsize="median", model="asymptotic", r2=pseudo_r2(fit_asym, df_visualisation_3$wsize_median), aic=AIC(fit_asym)))
 
+# set linetypes and alphas based on best model (lowest AIC)
+best_model <- df_correlation %>% filter(wsize == "median") %>% slice(which.min(aic)) %>% pull(model)
+linetype_map <- setNames(ifelse(models == best_model, "solid", "dashed"), models)
+alpha_map <- setNames(ifelse(models == best_model, 1.0, 0.7), models)
+
 # create a sequence of x values for plotting the fitted lines
 df_lines <- data.frame(
   x = rep(x_seq, 3),
@@ -242,25 +237,26 @@ df_lines <- data.frame(
     predict(fit_log, newdata=newdata),
     predict(fit_asym, newdata=newdata)
   ),
-  model = rep(c("Linear", "Logarithmic", "Asymptote"), each=200)
+  model = rep(models, each=200)
 )
 
 # visualisation
 plot <- ggplot(df_visualisation_3) +
   geom_point(aes(x=chr/1000000, y=wsize_median), size=5) +
-  geom_line(data=df_lines, aes(colour=model, x=x/1000000, y=y), alpha=0.7, linewidth=2) +
+  geom_line(data=df_lines, aes(colour=model, x=x/1000000, y=y, linetype=model, alpha=model), linewidth=2) +
   labs(x="Chromosome length (Mb)", y="Median window size (bp)", color="Model") +
-  scale_colour_manual(values = c(Linear="#00ba38",
-                                 Logarithmic="#619cff",
-                                 Asymptote="#f8766d")) +
+  scale_colour_manual(values=colour_map) +
+  scale_linetype_manual(values=linetype_map) +
+  scale_alpha_manual(values=alpha_map) +
+  guides(linetype="none", alpha="none") +
   theme(
-    axis.title.x=element_text(size=base_font),
-    axis.title.y=element_text(size=base_font),
-    axis.text.y=element_text(size=label_font),
-    axis.text.x=element_text(size=label_font),
-    legend.title=element_text(size=label_font),
-    legend.text=element_text(size=label_font),
-    legend.key.size=unit(2,"cm")
+    axis.text.x = element_text(size=40),
+    axis.title.x = element_text(size=40, margin=margin(t=10, r=0, b=0, l=0)),
+    axis.text.y = element_text(size=40),
+    axis.title.y = element_text(size=40, margin=margin(t=0, r=10, b=0, l=0)),
+    legend.title = element_text(size=40),
+    legend.text = element_text(size=30),
+    legend.key.size = unit(2,"cm")
   )
 
 tiff(filename=fn_chrlen_wsize_median, units="px", width=1920, height=1080)
