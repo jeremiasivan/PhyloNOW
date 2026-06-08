@@ -54,7 +54,7 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
         conda install -c conda-forge r-data.table r-doSNOW r-log4r r-optparse r-phangorn r-markdown r-tidyverse r-yaml bioconda::bioconductor-biostrings bioconda::iqtree bioconda::seqkit
         ```
 
-3. **Update the parameters in config.yaml** <br>
+3. **Update the parameters in `config.yaml`** <br>
 
 4. **Run PhyloNOW** <br>
     ```
@@ -64,12 +64,13 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
 
     In UNIX-based operating systems (e.g., Linux and MacOS), it is advisable to use `nohup` or `tmux` to run the whole pipeline. For Windows, you can use `psmux`. 
 
-5. **Summarise multiple PhyloNOW runs (optional)** <br>
-    - Store all PhyloNOW output folders in the same folder
-    - Run `summarise_multiple_runs.R`
-        ```
-        Rscript summarise_multiple_runs.R -i /home/user/phyloNOW_runs/ -o /home/user/phyloNOW_summary/
-        ```
+### [Additional Step] Summarise multiple PhyloNOW runs
+If you have multiple PhyloNOW runs representing different chromosomes from the same set of taxa, you can summarise the window size variation across chromosomes with `summarise_multiple_runs.R`
+1. **Store all PhyloNOW output folders in one folder**
+2. **Run `summarise_multiple_runs.R`**
+    ```
+    Rscript summarise_multiple_runs.R -i /home/user/all_phyloNOW_runs/ -o /home/user/all_phyloNOW_summary/
+    ```
 
 ---
 ## <a id="refs">References</a>
@@ -80,4 +81,4 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
 3. Anthropic. (2026). Claude 4.6 Sonnet was used to generate `config.yaml` and `run_pipeline.R`. 
 
 ---
-*Last update: 06 June 2026 by Jeremias Ivan*
+*Last update: 08 June 2026 by Jeremias Ivan*
