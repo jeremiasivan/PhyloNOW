@@ -7,13 +7,12 @@
 
 **If you use PhyloNOW, please cite as:**
 ```
-J. Ivan & R. Lanfear. (2026). Using Variable Window Sizes for Phylogenomic Analyses of Whole Genome Alignments, bioRxiv. doi:10.64898/2026.03.04.709403
+J. Ivan & R. Lanfear. (2026). PhyloNOW: Using Variable Window Sizes for Phylogenomic Analyses of Whole Genome Alignments, bioRxiv. doi:10.64898/2026.03.04.709403.
 ```
 
 ## Table of Content
 - <a href="#prereqs">Prerequisites</a>
 - <a href="#genpipe">General Pipeline</a>
-- <a href="#timecom">Time Complexity</a>
 - <a href="#refs">References</a>
 
 ## <a id="prereqs">Prerequisites</a>
@@ -81,4 +80,4 @@ If you have multiple PhyloNOW runs representing different chromosomes from the s
 3. Anthropic. (2026). Claude 4.6 Sonnet was used to generate `config.yaml` and `run_pipeline.R`. 
 
 ---
-*Last update: 08 June 2026 by Jeremias Ivan*
+*Last update: 09 June 2026 by Jeremias Ivan*
