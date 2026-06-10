@@ -13,7 +13,11 @@ suppressPackageStartupMessages(library(yaml))
 
 # create a function to retrieve parameter value with default
 f_get_param <- function(value, default) {
-  ifelse (is.null(value) || value=="", default, value)
+  if (is.null(value) || identical(value, "")) {
+    default
+  } else {
+    value
+  }
 }
 
 # --- Argument parsing ----------------------------------------
@@ -68,7 +72,7 @@ if (opt$redo) {
 }
 
 # --- Map config to rmarkdown params --------------------------
-params <- list(
+render_params <- list(
   codedir               = cfg$codedir,
   prefix                = cfg$prefix,
   outdir                = cfg$outdir,
@@ -90,33 +94,33 @@ params <- list(
   run_midpoint_root     = as.logical(f_get_param(cfg$run_midpoint_root, FALSE)),
 
   input_aln             = cfg$input_aln,
-  init_wsize            = as.integer(f_get_param(cfg$init_wsize, NA)),
+  init_wsize            = suppressWarnings(as.integer(f_get_param(cfg$init_wsize, NA))),
   split_prop            = unlist(f_get_param(cfg$split_prop, list(0.25, 0.5, 0.75))),
   min_informative_sites = as.integer(f_get_param(cfg$min_informative_sites, 1))
 )
 
 # --- Run PhyloNOW --------------------------------------------
-rmd_path <- file.path(path.expand(params$codedir), "codes", "1_main.Rmd")
+rmd_path <- file.path(path.expand(render_params$codedir), "codes", "1_main.Rmd")
 if (!file.exists(rmd_path)) {
   stop(paste("1_main.Rmd not found:", rmd_path))
 }
 
 message("Starting PhyloNOW pipeline...")
 message("  Config:  ", opt$config)
-message("  Prefix:  ", params$prefix)
-message("  Output:  ", params$outdir)
-message("  Input:   ", params$input_aln)
-message("  Threads: ", params$thread)
+message("  Prefix:  ", render_params$prefix)
+message("  Output:  ", render_params$outdir)
+message("  Input:   ", render_params$input_aln)
+message("  Threads: ", render_params$thread)
 
 # render the Rmarkdown file
 rmarkdown::render(
   input       = rmd_path,
-  params      = params,
-  output_file = paste0(params$prefix, "_report.html"),
-  output_dir  = file.path(path.expand(params$outdir), params$prefix),
+  params      = render_params,
+  output_file = paste0(render_params$prefix, "_report.html"),
+  output_dir  = file.path(path.expand(render_params$outdir), render_params$prefix),
   quiet       = FALSE
 )
 
 message("Done. Report: ",
-        file.path(path.expand(params$outdir), params$prefix,
-                  paste0(params$prefix, "_report.html")))
+        file.path(path.expand(render_params$outdir), render_params$prefix,
+                  paste0(render_params$prefix, "_report.html")))
