@@ -62,7 +62,7 @@ if (any(outgroup != "")) {
 
 msg <- paste0("Running PhyloNOW with a starting window size of ", init_wsize, "bp")
 readr::write_lines(msg, file=fn_log, append=T)
-cat(msg)
+cat(paste0(msg,"\n"))
 
 # generate data.frame for each window
 numw <- ceiling(seq_len/init_wsize)
@@ -157,10 +157,11 @@ df_aic <- data.table::data.table(step="initial", iter="00", aic=sum(df_current$a
 # print the total AIC
 msg <- paste("Total AIC of initial alignment:", sum(df_current$aic, na.rm=TRUE))
 log4r::info(fn_logger, msg)
-cat(msg)
+cat(paste0(msg,"\n"))
 ```
 
-```{r split}
+## Splitting Steps
+```{r split, echo=FALSE}
 readr::write_lines(c("", "----------      Split      ---------",
                          paste("Minimum number of informative sites:", params$min_informative_sites)),
                          file=fn_log, append=T)
@@ -199,7 +200,7 @@ while (is_repeat == TRUE) {
     # print the total AIC
     msg <- paste0("Total AIC after split iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
     log4r::info(fn_logger, msg)
-    cat(msg)
+    cat(paste0(msg,"\n"))
 
     # update the AIC data.frame
     df_aic <- rbind(df_aic, data.table::data.table(step="split", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
@@ -352,7 +353,7 @@ while (is_repeat == TRUE) {
   # print the total AIC
   msg <- paste0("Total AIC after split iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
   log4r::info(fn_logger, msg)
-  cat(msg)
+  cat(paste0(msg,"\n"))
 
   # update the AIC data.frame
   df_aic <- rbind(df_aic, data.table::data.table(step="split", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
@@ -366,7 +367,8 @@ stopCluster(nwcl)
 df_current$is_split <- NULL
 ```
 
-```{r merge}
+## Merging Steps
+```{r merge, echo=FALSE}
 readr::write_lines(c("","-----------       Merge     ---------"), file=fn_log, append=T)
 
 # disable scientific notation 
@@ -405,7 +407,7 @@ while (is_repeat == TRUE) {
     # print the total AIC
     msg <- paste0("Total AIC after merge iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
     log4r::info(fn_logger, msg)
-    cat(msg)
+    cat(paste0(msg,"\n"))
 
     # update the AIC data.frame
     df_aic <- rbind(df_aic, data.table::data.table(step="merge", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
@@ -534,7 +536,7 @@ while (is_repeat == TRUE) {
   # print the total AIC
   msg <- paste0("Total AIC after merge iteration ", iterator_padded, ": ", sum(df_current$aic, na.rm=TRUE))
   log4r::info(fn_logger, msg)
-  cat(msg)
+  cat(paste0(msg,"\n"))
 
   # update the AIC data.frame
   df_aic <- rbind(df_aic, data.table::data.table(step="merge", iter=iterator_padded_id, aic=sum(df_current$aic, na.rm=TRUE)))
@@ -552,7 +554,7 @@ data.table::fwrite(df_current, file=fn_winsum, row.names=F, col.names=T, quote=F
 # print the final total AIC
 msg <- paste("Final total AIC:", sum(df_current$aic, na.rm=TRUE))
 log4r::info(fn_logger, msg)
-cat(msg)
+cat(paste0(msg,"\n"))
 ```
 
 ## Plot of total AIC changes across iterations
@@ -560,17 +562,26 @@ cat(msg)
 # create a sequential x-axis
 df_aic$x <- 1:nrow(df_aic)
 
+# set the order of step column
+df_aic$step[nrow(df_aic)] <- "final"
+df_aic$step <- factor(df_aic$step, levels=c("initial", "split", "merge", "final"))
+
 # visualisation
-ggplot(df_aic, aes(x=x, y=aic, colour=type, group=1)) +
+ggplot(df_aic, aes(x=x, y=aic, colour=step, group=1)) +
   geom_line(color="grey70", linewidth=1.2) +
   geom_point(size=4) +
   scale_x_continuous(breaks=df_aic$x, labels=df_aic$iter) +
-  scale_color_manual(values=c(init="black", split="#378ADD", merge="#1D9E75")) +
-  labs(x="Step", y="AIC", color="Analysis") +
-  theme_minimal(base_size=16)
+  scale_color_manual(values=c(initial="black", split="#378ADD", merge="#1D9E75", final="red")) +
+  labs(x="Step", y="AIC", colour="Analysis") +
+  theme_minimal(base_size=14) +
+  theme(
+    axis.text.x=element_text(angle=45, vjust=1, hjust=1),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank()
+  )
 ```
 
-```{r tree}
+```{r tree, include=FALSE}
 readr::write_lines(c("","-----------    Gene Trees   ---------"), file=fn_log, append=T)
 
 # create doSNOW cluster
@@ -651,7 +662,7 @@ if (all(outgroup != "") && length(outgroup) != 0) {
 }
 ```
 
-```{r tree-rootstrap, eval=params$run_rootstrap}
+```{r tree-rootstrap, eval=params$run_rootstrap, include=FALSE}
 # create doSNOW cluster
 nwcl <- makeCluster(params$thread)
 doSNOW::registerDoSNOW(nwcl)
@@ -699,7 +710,7 @@ df_rootstrap <- f_update_df_topology_rooted(df_rootstrap)
 data.table::fwrite(df_rootstrap, file=fn_rootstrap, row.names=F, col.names=T, quote=F, sep="\t")
 ```
 
-```{r tree-midroot, eval=params$run_midpoint_root}
+```{r tree-midroot, eval=params$run_midpoint_root, include=FALSE}
 # create doSNOW cluster
 nwcl <- makeCluster(params$thread)
 doSNOW::registerDoSNOW(nwcl)
