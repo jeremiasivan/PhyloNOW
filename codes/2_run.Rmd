@@ -655,7 +655,7 @@ df_topology_all <- df_topology %>%
 data.table::fwrite(df_topology_all, file=fn_uqtops_all, row.names=F, col.names=T, quote=F, sep="\t")
 
 # summarise highly-supported topology proportion
-if (all(outgroup != "") && length(outgroup) != 0) {
+if (tolower(bootstrap_type)=="ufboot" || tolower(bootstrap_type)=="nonparametric") {
   df_topology_highbs <- df_topology %>%
       filter(is_highbs==TRUE) %>%
       group_by(topology) %>%
