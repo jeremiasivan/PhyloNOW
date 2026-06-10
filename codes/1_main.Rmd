@@ -45,7 +45,7 @@ params:
 sys_tic <- Sys.time()
 
 # load libraries and function
-suppressPackageStartupMessages(library(doNOW))
+suppressPackageStartupMessages(library(doSNOW))
 suppressPackageStartupMessages(library(tidyverse))
 
 source(file.path(path.expand(params$codedir), "codes", "functions.R"), local=TRUE)
@@ -67,7 +67,7 @@ if (params$redo) {
 if (!file.exists(fn_log)) {
   readr::write_lines(c("####################################",
                        "####          PhyloNOW          ####",
-                       "####################################"), path=fn_log)
+                       "####################################"), file=fn_log)
 }
 
 knitr::opts_knit$set(root.dir=currentdir)
@@ -82,5 +82,5 @@ sys_toc <- Sys.time()
 
 # write the system time in log file
 readr::write_lines(c("", paste0("Total elapsed time: ", round(as.numeric(difftime(sys_toc, sys_tic, units = "mins")), 3), " mins")),
-                   path=fn_log, append=T)
+                   file=fn_log, append=T)
 ```

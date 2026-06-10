@@ -29,7 +29,7 @@ if (tolower(params$bootstrap_type) == "ufboot") {
 ```
 
 ```{r window-aln, include=FALSE}
-readr::write_lines(c("", "---------- Window Alignment --------"), path=fn_log, append=T)
+readr::write_lines(c("", "---------- Window Alignment --------"), file=fn_log, append=T)
 
 # disable scientific notation 
 options(scipen=999)
@@ -61,7 +61,7 @@ if (any(outgroup != "")) {
 }
 
 msg <- paste0("Running PhyloNOW with a starting window size of ", init_wsize, "bp")
-readr::write_lines(msg, path=fn_log, append=T)
+readr::write_lines(msg, file=fn_log, append=T)
 cat(msg)
 
 # generate data.frame for each window
@@ -163,7 +163,7 @@ cat(msg)
 ```{r split}
 readr::write_lines(c("", "----------      Split      ---------",
                          paste("Minimum number of informative sites:", params$min_informative_sites)),
-                         path=fn_log, append=T)
+                         file=fn_log, append=T)
 
 # set initial variables
 iterator <- 0
@@ -367,7 +367,7 @@ df_current$is_split <- NULL
 ```
 
 ```{r merge}
-readr::write_lines(c("","-----------       Merge     ---------"), path=fn_log, append=T)
+readr::write_lines(c("","-----------       Merge     ---------"), file=fn_log, append=T)
 
 # disable scientific notation 
 options(scipen=999)
@@ -571,7 +571,7 @@ ggplot(df_aic, aes(x=x, y=aic, colour=type, group=1)) +
 ```
 
 ```{r tree}
-readr::write_lines(c("","-----------    Gene Trees   ---------"), path=fn_log, append=T)
+readr::write_lines(c("","-----------    Gene Trees   ---------"), file=fn_log, append=T)
 
 # create doSNOW cluster
 nwcl <- makeCluster(params$thread)
