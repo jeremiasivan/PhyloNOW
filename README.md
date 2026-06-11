@@ -3,7 +3,7 @@
 **PhyloNOW (Phylogenomic Non-Overlapping Windows)** is an R pipeline to partition chromosome alignments into non-overlapping windows with variable sizes based on local AIC improvements. It consists of two main steps: iterative splitting and iterative merging of neighbouring windows. This pipeline is mainly developed and tested using MacOS and Linux, so there might be incompatibilities using Windows.
 
 > [!NOTE]
-> This repository stores the R codes for running PhyloNOW with your own input alignments. If you want to simulate chromosome alignments with varying recombination rates <i>or</i> run non-overlapping windows with fixed window sizes, please visit <b>SimNOW (Simulation Non-Overlapping Windows)</b> Github <a href="https://github.com/jeremiasivan/SimNOW">repository</a>.
+> This repository stores the R codes for running non-overlapping windows with variable window sizes. If you want to simulate chromosome alignments with varying recombination rates and patterns, please use <a href="https://github.com/jeremiasivan/SimNOW"><b>SimNOW (Simulation Non-Overlapping Windows)</b></a>. If you want to run non-overlapping windows with fixed window size (which has been shown to perform poorly compared to using variable window sizes), please use <a href="https://github.com/jeremiasivan/StepwiseNOW"><b>StepwiseNOW (Stepwise Non-Overlapping Windows)</b></a>.
 
 **If you use PhyloNOW, please cite as:**
 ```
@@ -50,7 +50,7 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
         ```
     -  Installing prerequisites
         ```
-        conda install -c conda-forge r-data.table r-doSNOW r-log4r r-optparse r-phangorn r-markdown r-tidyverse r-yaml bioconda::bioconductor-biostrings bioconda::iqtree bioconda::seqkit
+        conda install -c conda-forge r-data.table r-doSNOW r-log4r r-optparse r-phangorn r-rmarkdown r-tidyverse r-yaml bioconda::bioconductor-biostrings bioconda::iqtree bioconda::seqkit
         ```
 
 3. **Update the parameters in `config.yaml`** <br>
@@ -80,4 +80,4 @@ If you have multiple PhyloNOW runs representing different chromosomes from the s
 3. Anthropic. (2026). Claude 4.6 Sonnet was used to generate `config.yaml` and `run_pipeline.R`. 
 
 ---
-*Last update: 09 June 2026 by Jeremias Ivan*
+*Last update: 11 June 2026 by Jeremias Ivan*
