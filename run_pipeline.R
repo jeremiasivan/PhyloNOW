@@ -45,7 +45,7 @@ if (!file.exists(opt$config)) {
 cfg <- yaml::read_yaml(opt$config)
 
 # set required parameters
-required_fields <- c("codedir", "outdir", "input_aln", "exe_seqkit", "exe_iqtree")
+required_fields <- c("codedir", "outdir", "input_aln")
 missing <- setdiff(required_fields, names(cfg))
 if (length(missing) > 0) {
   stop(paste("Missing required config fields:", paste(missing, collapse=", ")))
@@ -79,8 +79,8 @@ render_params <- list(
   thread                = as.integer(f_get_param(cfg$thread, 1)),
   redo                  = as.logical(f_get_param(cfg$redo, FALSE)),
 
-  exe_seqkit            = cfg$exe_seqkit,
-  exe_iqtree            = cfg$exe_iqtree,
+  exe_seqkit            = f_get_param(cfg$exe_seqkit, "seqkit"),
+  exe_iqtree            = f_get_param(cfg$exe_iqtree, "iqtree3"),
 
   set_blmin             = as.logical(f_get_param(cfg$set_blmin, TRUE)),
   set_model             = as.logical(f_get_param(cfg$set_model, FALSE)),

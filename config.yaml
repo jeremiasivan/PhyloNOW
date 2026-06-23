@@ -14,7 +14,7 @@ redo:     FALSE                           # re-run even if output files exist (d
 
 # --- Executables ---------------------------------------------
 exe_seqkit: "seqkit"                      # path to seqkit executable
-exe_iqtree: "iqtree2"                     # path to IQ-TREE2 executable
+exe_iqtree: "iqtree3"                     # path to IQ-TREE2 executable
 
 # --- IQ-TREE2 Settings ---------------------------------------
 set_blmin          :  TRUE                # set minimum branch length per window (default: TRUE)
