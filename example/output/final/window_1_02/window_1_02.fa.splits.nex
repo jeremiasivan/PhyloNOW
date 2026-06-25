@@ -1,0 +1,24 @@
+#nexus
+
+BEGIN Taxa;
+DIMENSIONS ntax=4;
+TAXLABELS
+[1] 'ponAbe2'
+[2] 'panTro4'
+[3] 'hg38'
+[4] 'gorGor3'
+;
+END; [Taxa]
+
+BEGIN Splits;
+DIMENSIONS ntax=4 nsplits=5;
+FORMAT labels=no weights=yes confidences=no intervals=no;
+MATRIX
+	100	 2,
+	100	 3,
+	100	 1 4,
+	100	 4,
+	100	 1,
+;
+END; [Splits]
+

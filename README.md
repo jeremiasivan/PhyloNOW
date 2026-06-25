@@ -13,6 +13,7 @@ J. Ivan & R. Lanfear. (2026). PhyloNOW: Using Variable Window Sizes for Phylogen
 ## Table of Content
 - <a href="#prereqs">Prerequisites</a>
 - <a href="#genpipe">General Pipeline</a>
+- <a href="#inout">Input and Output Files</a>
 - <a href="#refs">References</a>
 
 ## <a id="prereqs">Prerequisites</a>
@@ -72,6 +73,28 @@ If you have multiple PhyloNOW runs representing different chromosomes from the s
     Rscript summarise_multiple_runs.R -i /home/user/all_phyloNOW_runs/ -o /home/user/all_phyloNOW_summary/
     ```
 
+## <a id="inout">Input and Output Files</a>
+
+### Input Files
+To run PhyloNOW, users are required to provide multiple sequence alignment in FASTA format.
+
+### Output Files
+Running PhyloNOW will create an output folder that consists of:
+- `fasta/`   : individual folder for the starting window alignments and trees
+- `split/`   : individual folder for each iteration of the splitting step, with its respective table summary (`summary_iterXX.tsv`)
+- `merge/`   : individual folder for each iteration of the merging step, with its respective table summary (`summary_iterXX.tsv`)
+- `final/`   : individual folder for the final window alignments and trees
+- `prefix.winsum`  : summary table for individual window alignments and AIC
+- `prefix.topsum`  : summary table for individual window alignments and topologies
+- `prefix.aicsum`  : summary table for AIC changes after every iteration
+- `prefix_all.uqtops`      : proportions of all gene tree topologies
+- `prefix_highbs.uqtops`   : proportions of highly-supported gene tree topologies
+- `prefix.log`             : PhyloNOW log file
+- `prefix_report.html`     : PhyloNOW HTML report
+
+### Example
+Please see <a href="/example/">`example/`</a> for example input and output files for running PhyloNOW on mitochondrial DNA of great apes (downloaded from <a href="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz20way">UCSC Genome Browser</a>).
+
 ---
 ## <a id="refs">References</a>
 1. Minh, B.Q., et al. (<a href="https://doi.org/10.1093/molbev/msaa015">2020</a>). **IQ-TREE 2: New Models and Efficient Methods for Phylogenetic Inference in the Genomic Era**. *Molecular Biology and Evolution*, *37*(5), 1530–1534.
@@ -99,4 +122,4 @@ If you have multiple PhyloNOW runs representing different chromosomes from the s
 12. Anthropic. (<a href="https://claude.ai/">2026</a>). Claude 4.6 Sonnet was used to generate `config.yaml` and `run_pipeline.R`. 
 
 ---
-*Last update: 12 June 2026 by Jeremias Ivan*
+*Last update: 25 June 2026 by Jeremias Ivan*

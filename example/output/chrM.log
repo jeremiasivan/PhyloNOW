@@ -1,0 +1,29 @@
+####################################
+####          PhyloNOW          ####
+####################################
+
+---------- Window Alignment --------
+Running PhyloNOW with a starting window size of 16568bp
+INFO  [2026-06-25 05:41:13] Total AIC of initial alignment: 77579.1548
+
+----------      Split      ---------
+Minimum number of informative sites: 5
+INFO  [2026-06-25 05:41:23] Total AIC after split iteration 01: 77431.2636
+INFO  [2026-06-25 05:41:30] Total AIC after split iteration 02: 77315.8794
+INFO  [2026-06-25 05:41:38] Total AIC after split iteration 03: 77284.3376
+INFO  [2026-06-25 05:41:45] Total AIC after split iteration 04: 77252.5964
+INFO  [2026-06-25 05:41:50] Total AIC after split iteration 05: 77241.5264
+INFO  [2026-06-25 05:41:53] Total AIC after split iteration 06: 77215.6208
+INFO  [2026-06-25 05:41:59] Total AIC after split iteration 07: 77211.5214
+INFO  [2026-06-25 05:42:00] Total AIC after split iteration 08: 77211.5214
+
+-----------       Merge     ---------
+INFO  [2026-06-25 05:42:08] Total AIC after merge iteration 01: 77194.7124
+INFO  [2026-06-25 05:42:08] Total AIC after merge iteration 02: 77188.7332
+INFO  [2026-06-25 05:42:10] Total AIC after merge iteration 03: 77179.572
+INFO  [2026-06-25 05:42:10] Total AIC after merge iteration 04: 77179.572
+INFO  [2026-06-25 05:42:10] Final total AIC: 77179.572
+
+-----------    Gene Trees   ---------
+
+Total elapsed time: 1.344 mins

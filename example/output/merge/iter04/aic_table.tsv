@@ -1,0 +1,3 @@
+window_one	window_two	aic_one	aic_two	dir_one	dir_two	window_merge	aic_merge	delta_aic	dir_merge	length_merge
+window_1_02	window_1_03	50742.95	2694.133	/home/jeremias//chrM/merge/iter03/window_1_02/window_1_02_window_1_03.fa	/home/jeremias//chrM/merge/iter01/window_1_06/window_1_06_window_1_07.fa	window_1_02x1_03	53467.2612	30.1782000000021	/home/jeremias//chrM/merge/iter04/window_1_02/window_1_02_window_1_03.fa	10993
+window_1_01	window_1_02	11915.3622	50742.95	/home/jeremias//chrM/split/iter02/window_1_01/window_1_01_075_1.fa	/home/jeremias//chrM/merge/iter03/window_1_02/window_1_02_window_1_03.fa	window_1_01x1_02	62859.571	201.258800000003	/home/jeremias//chrM/merge/iter04/window_1_01/window_1_01_window_1_02.fa	13608

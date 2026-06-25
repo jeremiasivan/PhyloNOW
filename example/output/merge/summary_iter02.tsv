@@ -1,0 +1,10 @@
+iter	window	length	aic	dir	is_merged
+s02	window_1_01	3107	11915.3622	/home/jeremias//chrM/split/iter02/window_1_01/window_1_01_075_1.fa	FALSE
+s03	window_1_02	259	1241.3616	/home/jeremias//chrM/split/iter03/window_1_02/window_1_02_025_1.fa	FALSE
+m02	window_1_03	10242	49510.7496	/home/jeremias//chrM/merge/iter02/window_1_03/window_1_03_window_1_04.fa	TRUE
+m01	window_1_04	492	2694.133	/home/jeremias//chrM/merge/iter01/window_1_06/window_1_06_window_1_07.fa	FALSE
+s07	window_1_05	55	278.3912	/home/jeremias//chrM/split/iter07/window_1_07/window_1_07_05_2.fa	FALSE
+m01	window_1_06	655	2870.8884	/home/jeremias//chrM/merge/iter01/window_1_09/window_1_09_window_1_10.fa	FALSE
+s06	window_1_07	982	4788.9074	/home/jeremias//chrM/split/iter06/window_1_08/window_1_08_025_2.fa	FALSE
+s04	window_1_08	582	3027.4774	/home/jeremias//chrM/split/iter04/window_1_06/window_1_06_075_1.fa	FALSE
+s04	window_1_09	194	861.4624	/home/jeremias//chrM/split/iter04/window_1_06/window_1_06_075_2.fa	FALSE

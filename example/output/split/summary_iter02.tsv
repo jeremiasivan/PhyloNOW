@@ -1,0 +1,5 @@
+iter	window	length	aic	dir	is_split
+s02	window_1_01	3107	11915.3622	/home/jeremias//chrM/split/iter02/window_1_01/window_1_01_075_1.fa	TRUE
+s02	window_1_02	1035	5074.1706	/home/jeremias//chrM/split/iter02/window_1_01/window_1_01_075_2.fa	TRUE
+s02	window_1_03	9320	44972.1276	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_075_1.fa	TRUE
+s02	window_1_04	3106	15354.219	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_075_2.fa	TRUE

@@ -1,0 +1,4 @@
+prop	window_one	window_two	length_one	length_two	aic_one	aic_two	dir_one	dir_two
+0.25	window_1_02_025_1	window_1_02_025_2	3107	9319	14682.3204	45676.0914	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_025_1.fa	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_025_2.fa
+0.5	window_1_02_05_1	window_1_02_05_2	6213	6213	29928.5842	30417.6898	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_05_1.fa	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_05_2.fa
+0.75	window_1_02_075_1	window_1_02_075_2	9320	3106	44972.1276	15354.219	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_075_1.fa	/home/jeremias//chrM/split/iter02/window_1_02/window_1_02_075_2.fa

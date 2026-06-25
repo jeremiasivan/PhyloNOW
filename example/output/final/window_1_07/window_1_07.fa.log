@@ -1,0 +1,249 @@
+IQ-TREE multicore version 2.4.0 for Linux x86 64-bit built Feb  7 2025
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    rosa (AVX512, FMA3, 755 GB RAM)
+Command: /home/jeremias/software/iqtree-2.4.0-Linux-intel/bin/iqtree2 -s /home/jeremias//chrM/final/window_1_07/window_1_07.fa -T 1 --quiet --redo -blmin 0.00171821305841924 -B 1000
+Seed:    166574 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Thu Jun 25 05:42:18 2026
+Kernel:  AVX+FMA - 1 threads (128 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 128 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /home/jeremias//chrM/final/window_1_07/window_1_07.fa ... Fasta format detected
+Reading fasta file: done in 4.45247e-05 secs using 98.82% CPU
+Alignment most likely contains DNA/RNA sequences
+Alignment has 4 sequences with 582 columns, 82 distinct patterns
+13 parsimony-informative, 162 singleton sites, 407 constant sites
+         Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 4.39584e-06 secs using 91% CPU
+   1  hg38       0.00%    passed     88.72%
+   2  gorGor3   12.71%    passed     93.31%
+   3  panTro4    0.34%    passed     69.02%
+   4  ponAbe2   48.97%    passed     38.43%
+****  TOTAL     15.51%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Perform fast likelihood tree search using GTR+I+G model...
+Estimate model parameters (epsilon = 5.000)
+Perform nearest neighbor interchange...
+Estimate model parameters (epsilon = 1.000)
+1. Initial log-likelihood: -1508.394
+2. Current log-likelihood: -1506.886
+Optimal log-likelihood: -1506.272
+Rate parameters:  A-C: 0.94981  A-G: 3.39255  A-T: 0.27950  C-G: 0.00010  C-T: 4.25514  G-T: 1.00000
+Warning! Some parameters hit the boundaries
+Base frequencies:  A: 0.335  C: 0.304  G: 0.122  T: 0.239
+Proportion of invariable sites: 0.353
+Gamma shape alpha: 2.497
+Parameters optimization took 2 rounds (0.004 sec)
+Time for fast ML tree search: 0.007 seconds
+
+NOTE: ModelFinder requires 0 MB RAM!
+ModelFinder will test up to 484 DNA models (sample size: 582 epsilon: 0.100) ...
+ No. Model         -LnL         df  AIC          AICc         BIC
+  1  GTR+F         1510.075     13  3046.150     3046.791     3102.914
+  2  GTR+F+I       1500.989     14  3029.979     3030.719     3091.109
+  3  GTR+F+G4      1502.261     14  3032.521     3033.262     3093.652
+  4  GTR+F+I+G4    1501.975     15  3033.951     3034.799     3099.448
+  5  GTR+F+R2      1501.327     15  3032.654     3033.502     3098.151
++R3 reinitialized from +R2 with factor 0.500
++R3 reinitialized from +R2 with factor 0.250
++R3 reinitialized from +R2 with factor 0.125
+  6  GTR+F+R3      1501.381     17  3036.761     3037.846     3110.991
+ 14  GTR+F+I+R2    1501.388     16  3034.777     3035.740     3104.640
+ 15  GTR+F+I+R3    1501.309     18  3038.618     3039.833     3117.214
+ 24  SYM+I         1547.911     11  3117.822     3118.285     3165.853
+ 25  SYM+G4        1548.532     11  3119.064     3119.527     3167.095
+ 26  SYM+I+G4      1548.089     12  3120.178     3120.726     3172.575
+ 27  SYM+R2        1547.865     12  3119.731     3120.279     3172.128
+ 46  TVM+F+I       1501.850     13  3029.700     3030.341     3086.464
+ 47  TVM+F+G4      1502.695     13  3031.389     3032.030     3088.153
+ 48  TVM+F+I+G4    1502.511     14  3033.023     3033.764     3094.153
+ 49  TVM+F+R2      1502.023     14  3032.045     3032.786     3093.176
+ 68  TVMe+I        1552.920     10  3125.840     3126.226     3169.505
+ 69  TVMe+G4       1553.223     10  3126.446     3126.831     3170.110
+ 70  TVMe+I+G4     1552.996     11  3127.991     3128.455     3176.023
+ 71  TVMe+R2       1553.038     11  3128.077     3128.540     3176.108
+ 90  TIM3+F+I      1506.415     12  3036.830     3037.378     3089.228
+ 91  TIM3+F+G4     1507.631     12  3039.263     3039.811     3091.660
+ 92  TIM3+F+I+G4   1507.405     13  3040.809     3041.450     3097.573
+ 93  TIM3+F+R2     1506.766     13  3039.532     3040.173     3096.296
+112  TIM3e+I       1561.375     9   3140.749     3141.064     3180.048
+113  TIM3e+G4      1562.176     9   3142.353     3142.667     3181.651
+114  TIM3e+I+G4    1561.858     10  3143.717     3144.102     3187.381
+115  TIM3e+R2      1561.491     10  3142.982     3143.368     3186.647
+134  TIM2+F+I      1501.714     12  3027.428     3027.976     3079.825
+135  TIM2+F+G4     1502.953     12  3029.906     3030.454     3082.303
+136  TIM2+F+I+G4   1502.719     13  3031.438     3032.079     3088.202
+137  TIM2+F+R2     1502.094     13  3030.189     3030.830     3086.953
+156  TIM2e+I       1549.617     9   3117.235     3117.550     3156.533
+157  TIM2e+G4      1550.277     9   3118.554     3118.869     3157.853
+158  TIM2e+I+G4    1549.966     10  3119.932     3120.317     3163.597
+159  TIM2e+R2      1549.715     10  3119.429     3119.814     3163.094
+178  TIM+F+I       1505.091     12  3034.183     3034.731     3086.580
+179  TIM+F+G4      1506.442     12  3036.885     3037.433     3089.282
+180  TIM+F+I+G4    1506.161     13  3038.322     3038.963     3095.086
+181  TIM+F+R2      1505.452     13  3036.905     3037.545     3093.669
+200  TIMe+I        1559.705     9   3137.410     3137.724     3176.708
+201  TIMe+G4       1560.711     9   3139.422     3139.737     3178.720
+202  TIMe+I+G4     1560.267     10  3140.534     3140.920     3184.199
+203  TIMe+R2       1559.861     10  3139.722     3140.108     3183.387
+222  TPM3u+F+I     1507.136     11  3036.272     3036.735     3084.303
+223  TPM3u+F+G4    1508.017     11  3038.033     3038.496     3086.064
+224  TPM3u+F+I+G4  1507.757     12  3039.514     3040.063     3091.912
+225  TPM3u+F+R2    1507.240     12  3038.480     3039.029     3090.878
+244  TPM3+I        1566.489     8   3148.978     3149.230     3183.910
+245  TPM3+G4       1567.044     8   3150.088     3150.340     3185.020
+246  TPM3+I+G4     1566.621     9   3151.242     3151.557     3190.541
+247  TPM3+R2       1566.691     9   3151.382     3151.697     3190.680
+266  TPM2u+F+I     1502.793     11  3027.586     3028.049     3075.617
+267  TPM2u+F+G4    1503.660     11  3029.320     3029.784     3077.352
+268  TPM2u+F+I+G4  1503.397     12  3030.793     3031.341     3083.191
+269  TPM2u+F+R2    1503.001     12  3030.002     3030.550     3082.400
+288  TPM2+I        1554.665     8   3125.329     3125.581     3160.261
+289  TPM2+G4       1554.960     8   3125.920     3126.171     3160.852
+290  TPM2+I+G4     1554.744     9   3127.489     3127.803     3166.787
+291  TPM2+R2       1554.772     9   3127.543     3127.858     3166.842
+310  K3Pu+F+I      1505.968     11  3033.936     3034.399     3081.967
+311  K3Pu+F+G4     1507.021     11  3036.042     3036.505     3084.073
+312  K3Pu+F+I+G4   1506.673     12  3037.346     3037.894     3089.743
+313  K3Pu+F+R2     1506.186     12  3036.373     3036.921     3088.771
+332  K3P+I         1564.857     8   3145.715     3145.966     3180.647
+333  K3P+G4        1565.537     8   3147.074     3147.326     3182.006
+334  K3P+I+G4      1565.078     9   3148.157     3148.471     3187.455
+335  K3P+R2        1564.989     9   3147.978     3148.293     3187.276
+354  TN+F+I        1507.083     11  3036.165     3036.628     3084.196
+355  TN+F+G4       1508.392     11  3038.784     3039.247     3086.815
+356  TN+F+I+G4     1507.952     12  3039.905     3040.453     3092.303
+357  TN+F+R2       1507.493     12  3038.986     3039.534     3091.383
+376  TNe+I         1562.685     8   3141.370     3141.622     3176.302
+377  TNe+G4        1563.643     8   3143.287     3143.538     3178.219
+378  TNe+I+G4      1563.116     9   3144.232     3144.547     3183.530
+379  TNe+R2        1562.845     9   3143.690     3144.005     3182.988
+398  HKY+F+I       1507.852     10  3035.705     3036.090     3079.369
+399  HKY+F+G4      1508.826     10  3037.652     3038.038     3081.317
+400  HKY+F+I+G4    1508.421     11  3038.843     3039.306     3086.874
+401  HKY+F+R2      1508.028     11  3038.057     3038.520     3086.088
+420  K2P+I         1567.880     7   3149.760     3149.955     3180.325
+421  K2P+G4        1568.519     7   3151.037     3151.232     3181.602
+422  K2P+I+G4      1567.947     8   3151.894     3152.146     3186.826
+423  K2P+R2        1568.036     8   3152.073     3152.324     3187.004
+442  F81+F+I       1580.569     9   3179.139     3179.454     3218.437
+443  F81+F+G4      1581.186     9   3180.372     3180.687     3219.671
+444  F81+F+I+G4    1580.924     10  3181.849     3182.234     3225.513
+445  F81+F+R2      1581.017     10  3182.035     3182.420     3225.700
+464  JC+I          1629.621     6   3271.242     3271.389     3297.441
+465  JC+G4         1630.186     6   3272.373     3272.519     3298.571
+466  JC+I+G4       1630.126     7   3274.252     3274.447     3304.818
+467  JC+R2         1630.091     7   3274.181     3274.376     3304.746
+Akaike Information Criterion:           TIM2+F+I
+Corrected Akaike Information Criterion: TIM2+F+I
+Bayesian Information Criterion:         TPM2u+F+I
+Best-fit model: TPM2u+F+I chosen according to BIC
+
+All model information printed to /home/jeremias//chrM/final/window_1_07/window_1_07.fa.model.gz
+CPU time for ModelFinder: 0.123 seconds (0h:0m:0s)
+Wall-clock time for ModelFinder: 0.136 seconds (0h:0m:0s)
+Generating 1000 samples for ultrafast bootstrap (seed: 166574)...
+
+NOTE: 0 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -1580.680
+2. Current log-likelihood: -1506.249
+3. Current log-likelihood: -1503.798
+4. Current log-likelihood: -1503.188
+5. Current log-likelihood: -1502.889
+Optimal log-likelihood: -1502.767
+Rate parameters:  A-C: 15.60931  A-G: 100.00000  A-T: 15.60931  C-G: 1.00000  C-T: 100.00000  G-T: 1.00000
+Warning! Some parameters hit the boundaries
+Base frequencies:  A: 0.335  C: 0.304  G: 0.122  T: 0.239
+Proportion of invariable sites: 0.503
+Parameters optimization took 5 rounds (0.003 sec)
+
+WARNING: Estimated model parameters are at boundary that can cause numerical instability!
+
+Wrote distance file to... 
+Computing ML distances based on estimated model parameters...
+Calculating distance matrix: done in 4.17978e-05 secs using 90.91% CPU
+Computing ML distances took 0.000080 sec (of wall-clock time) 0.000077 sec (of CPU time)
+Setting up auxiliary I and S matrices: done in 5.64754e-05 secs using 92.08% CPU
+Computing RapidNJ tree took 0.000199 sec (of wall-clock time) 0.000182 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -1502.763
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 99 parsimony trees... 0.008 second
+Computing log-likelihood of 2 initial trees ... 0.000 seconds
+Current best score: -1502.763
+
+Do NNI search on 3 best initial trees
+Finish initializing candidate tree set (3)
+Current best tree score: -1502.763 / CPU time: 0.013
+Number of iterations: 3
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Iteration 10 / LogL: -1503.027 / Time: 0h:0m:0s
+Iteration 20 / LogL: -1503.027 / Time: 0h:0m:0s
+Iteration 30 / LogL: -1503.027 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 40 / LogL: -1502.863 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 50 / LogL: -1502.763 / Time: 0h:0m:0s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -1507.845
+Iteration 60 / LogL: -1502.974 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 70 / LogL: -1503.027 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 80 / LogL: -1502.763 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 90 / LogL: -1503.027 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 100 / LogL: -1503.422 / Time: 0h:0m:0s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -1507.845
+NOTE: Bootstrap correlation coefficient of split occurrence frequencies: 1.000
+TREE SEARCH COMPLETED AFTER 101 ITERATIONS / Time: 0h:0m:0s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -1502.763
+2. Current log-likelihood: -1502.751
+3. Current log-likelihood: -1502.741
+Optimal log-likelihood: -1502.739
+Rate parameters:  A-C: 15.12124  A-G: 100.00000  A-T: 15.12124  C-G: 1.00000  C-T: 100.00000  G-T: 1.00000
+Warning! Some parameters hit the boundaries
+Base frequencies:  A: 0.335  C: 0.304  G: 0.122  T: 0.239
+Proportion of invariable sites: 0.511
+Parameters optimization took 3 rounds (0.001 sec)
+
+WARNING: Estimated model parameters are at boundary that can cause numerical instability!
+
+BEST SCORE FOUND : -1502.739
+Creating bootstrap support values...
+Split supports printed to NEXUS file /home/jeremias//chrM/final/window_1_07/window_1_07.fa.splits.nex
+Total tree length: 0.794
+
+Total number of iterations: 101
+CPU time used for tree search: 0.376 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.376 sec (0h:0m:0s)
+Total CPU time used: 0.530 sec (0h:0m:0s)
+Total wall-clock time used: 0.544 sec (0h:0m:0s)
+
+Computing bootstrap consensus tree...
+Reading input file /home/jeremias//chrM/final/window_1_07/window_1_07.fa.splits.nex...
+4 taxa and 7 splits.
+Consensus tree written to /home/jeremias//chrM/final/window_1_07/window_1_07.fa.contree
+Reading input trees file /home/jeremias//chrM/final/window_1_07/window_1_07.fa.contree
+Log-likelihood of consensus tree: -1502.735
+
+Analysis results written to: 
+  IQ-TREE report:                /home/jeremias//chrM/final/window_1_07/window_1_07.fa.iqtree
+  Maximum-likelihood tree:       /home/jeremias//chrM/final/window_1_07/window_1_07.fa.treefile
+  Likelihood distances:          /home/jeremias//chrM/final/window_1_07/window_1_07.fa.mldist
+
+Ultrafast bootstrap approximation results written to:
+  Split support values:          /home/jeremias//chrM/final/window_1_07/window_1_07.fa.splits.nex
+  Consensus tree:                /home/jeremias//chrM/final/window_1_07/window_1_07.fa.contree
+  Screen log file:               /home/jeremias//chrM/final/window_1_07/window_1_07.fa.log
+
+Date and Time: Thu Jun 25 05:42:18 2026
