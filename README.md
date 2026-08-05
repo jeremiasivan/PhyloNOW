@@ -34,6 +34,7 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
 | log4r      | <a href="https://cran.r-project.org/package=log4r">Link</a>      | <a href="https://anaconda.org/conda-forge/r-log4r">Link</a>              |
 | optparse   | <a href="https://cran.r-project.org/package=optparse">Link</a>   | <a href="https://anaconda.org/conda-forge/r-optparse">Link</a>           |
 | phangorn   | <a href="https://cran.r-project.org/package=phangorn">Link</a>   | <a href="https://anaconda.org/conda-forge/r-phangorn">Link</a>           |
+| phytools   | <a href="https://cran.r-project.org/package=phytools">Link</a>   | <a href="https://anaconda.org/conda-forge/r-phytools">Link</a>           |
 | rmarkdown  | <a href="https://cran.r-project.org/package=rmarkdown">Link</a>  | <a href="https://anaconda.org/conda-forge/r-rmarkdown">Link</a>          |
 | tidyverse  | <a href="https://cran.r-project.org/package=tidyverse">Link</a>  | <a href="https://anaconda.org/conda-forge/r-tidyverse">Link</a>          |
 | yaml       | <a href="https://cran.r-project.org/package=yaml">Link</a>       | <a href="https://anaconda.org/conda-forge/r-yaml">Link</a>               |
@@ -52,7 +53,7 @@ PhyloNOW requires several software and R packages to run. We recommend you to us
         ```
     -  Installing prerequisites
         ```
-        conda install -c conda-forge r-data.table r-doSNOW r-log4r r-optparse r-phangorn r-rmarkdown r-tidyverse r-yaml bioconda::bioconductor-biostrings bioconda::iqtree bioconda::seqkit
+        conda install -c conda-forge r-data.table r-doSNOW r-log4r r-optparse r-phangorn r-phytools r-rmarkdown r-tidyverse r-yaml bioconda::bioconductor-biostrings bioconda::iqtree bioconda::seqkit
         ```
 
 3. **Update the parameters in `config.yaml`** <br>
@@ -113,13 +114,15 @@ Please see <a href="/example/">`example/`</a> for example input and output files
 
 8. Schliep, K. (<a href="https://doi.org/10.1093/bioinformatics/btq706">2011</a>). **phangorn: Phylogenetic Analysis in R**. *Bioinformatics*, *27*(4), 592–593.
 
-9. Allaire, J.J., et al. (<a href="https://doi.org/10.32614/CRAN.package.rmarkdown">2026</a>). **rmarkdown: Dynamic Documents for R**. *R package*.
+9. Revell, L. (<a href="https://doi.org/10.1111/j.2041-210X.2011.00169.x">2011</a>). **phytools: an R package for phylogenetic comparative biology (and other things)**. *Methods in Ecology and Evolution*, *3*(2), 217-223.
 
-10. Wickham, H., et al. (<a href="https://doi.org/10.21105/joss.01686">2019</a>). **Welcome to the tidyverse**. *Journal of Open Source Software*, *4*(43), 1686.
+10. Allaire, J.J., et al. (<a href="https://doi.org/10.32614/CRAN.package.rmarkdown">2026</a>). **rmarkdown: Dynamic Documents for R**. *R package*.
 
-11. Stephens, J., et al. (<a href="https://doi.org/10.32614/CRAN.package.yaml">2025</a>). **yaml: Methods to Convert R Data to YAML and Back**. *R package*.
+11. Wickham, H., et al. (<a href="https://doi.org/10.21105/joss.01686">2019</a>). **Welcome to the tidyverse**. *Journal of Open Source Software*, *4*(43), 1686.
 
-12. Anthropic. (<a href="https://claude.ai/">2026</a>). Claude 4.6 Sonnet was used to generate `config.yaml` and `run_pipeline.R`. 
+12. Stephens, J., et al. (<a href="https://doi.org/10.32614/CRAN.package.yaml">2025</a>). **yaml: Methods to Convert R Data to YAML and Back**. *R package*.
+
+13. Anthropic. (<a href="https://claude.ai/">2026</a>). Claude 4.6 Sonnet was used to generate `config.yaml` and `run_pipeline.R`. 
 
 ---
-*Last update: 25 June 2026 by Jeremias Ivan*
+*Last update: 05 August 2026 by Jeremias Ivan*

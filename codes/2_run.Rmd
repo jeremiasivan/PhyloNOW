@@ -732,7 +732,7 @@ df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
   if (!file.exists(fn_treefile_root) || params$redo) {
     # midpoint root
     tre <- ape::read.tree(fn_treefile)
-    tre_root <- phangorn::midpoint(tre)
+    tre_root <- phytools::midpoint.root(tre)
     ape::write.tree(tre_root, file=fn_treefile_root)
   }
 
@@ -742,11 +742,20 @@ df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
   }
 
   # extract topology
-  top_root <- ape::read.tree(fn_treefile_root)
+  tre_root <- ape::read.tree(fn_treefile_root)
+  top_root <- tre_root
   top_root$edge.length <- NULL
   top_root$node.label <- NULL
 
-  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(top_root)))
+  # extract the two clades
+  root_node <- length(tre_root$tip.label) + 1
+  child_node <- tre_root$edge[tre_root$edge[,1] == root_node, 2]
+
+  child_support <- sapply(child_node, get_support, tree=tre_root, ntips=length(tre_root$tip.label))
+  child_support <- as.numeric(child_support)
+  child_support <- round(mean(child_support, na.rm=TRUE), 2)
+
+  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(top_root), avg_bootstrap=child_support))
 }
 
 stopCluster(nwcl)
