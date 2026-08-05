@@ -156,7 +156,7 @@ f_update_df_topology_rooted <- function(df_topology) {
 }
 
 # extract support value for a given clade in a tree (source: Claude)
-f_extract_support <- function(node, tree, ntips) {
+f_extract_clade_support <- function(node, tree, ntips) {
   # for a single tip, no bootstrap value applies
   if (node <= ntips) {
     return(NA)
