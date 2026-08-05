@@ -744,20 +744,17 @@ df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind', .export="f_extrac
   # open treefile
   tre_root <- ape::read.tree(fn_treefile_root)
 
+  # extract the two clades
+  root_node <- length(tre_root$tip.label) + 1
+  child_node <- max(tre_root$edge[tre_root$edge[,1] == root_node, 2])
+  child_support <- as.numeric(tree$node.label[child_node - length(tre_root$tip.label)])
+
   # extract topology
   top_root <- tre_root
   top_root$edge.length <- NULL
   top_root$node.label <- NULL
 
-  # extract the two clades
-  root_node <- length(tre_root$tip.label) + 1
-  child_node <- tre_root$edge[tre_root$edge[,1] == root_node, 2]
-
-  child_support <- sapply(child_node, f_extract_clade_support, tree=tre_root, ntips=length(tre_root$tip.label))
-  child_support <- as.numeric(child_support)
-  child_support <- round(mean(child_support, na.rm=TRUE), 2)
-
-  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(top_root), avg_bootstrap=child_support))
+  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(top_root), rootsplit_bootstrap=child_support))
 }
 
 stopCluster(nwcl)

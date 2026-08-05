@@ -155,16 +155,6 @@ f_update_df_topology_rooted <- function(df_topology) {
   return(df_topology)
 }
 
-# extract support value for a given clade in a tree (source: Claude)
-f_extract_clade_support <- function(node, tree, ntips) {
-  # for a single tip, no bootstrap value applies
-  if (node <= ntips) {
-    return(NA)
-  } else {
-    return(tree$node.label[node - ntips])
-  }
-}
-
 # function: calculate rootstrap in IQ-TREE
 f_calculate_rootstrap <- function(input, prefix, bootstrap_type, bootstrap_n, exe_iqtree) {
   iqtree_cmd <- paste(exe_iqtree,
