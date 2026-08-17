@@ -94,7 +94,7 @@ Running PhyloNOW will create an output folder that consists of:
 - `prefix_report.html`     : PhyloNOW HTML report
 
 ### Example
-Please see <a href="/example/">`example/`</a> for example input and output files for running PhyloNOW on mitochondrial DNA of great apes (downloaded from <a href="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz20way">UCSC Genome Browser</a>).
+See <a href="/example/">`example/`</a> for example input and output files for running PhyloNOW on mitochondrial DNA of great apes (downloaded from <a href="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz20way">UCSC Genome Browser</a>). Please be reminded to update the file and executable paths in `config.yaml` before re-rerunning the analyses.
 
 ---
 ## <a id="refs">References</a>
@@ -125,4 +125,4 @@ Please see <a href="/example/">`example/`</a> for example input and output files
 13. Anthropic. (<a href="https://claude.ai/">2026</a>). Claude 4.6 Sonnet was used to generate `config.yaml` and `run_pipeline.R`. 
 
 ---
-*Last update: 05 August 2026 by Jeremias Ivan*
+*Last update: 17 August 2026 by Jeremias Ivan*
