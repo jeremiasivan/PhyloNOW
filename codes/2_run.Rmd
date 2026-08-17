@@ -747,7 +747,7 @@ df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind', .export="f_extrac
   # extract the two clades
   root_node <- length(tre_root$tip.label) + 1
   child_node <- max(tre_root$edge[tre_root$edge[,1] == root_node, 2])
-  child_support <- as.numeric(tree$node.label[child_node - length(tre_root$tip.label)])
+  child_support <- as.numeric(tre_root$node.label[child_node - length(tre_root$tip.label)])
 
   # extract topology
   top_root <- tre_root
