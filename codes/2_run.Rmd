@@ -720,7 +720,7 @@ nwcl <- makeCluster(params$thread)
 doSNOW::registerDoSNOW(nwcl)
 
 # iterate over windows
-df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
+df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind', .export="f_extract_clade_support") %dopar% {
   # output directory
   outdir_window <- file.path(outdir_final, df_current$window[i])
 
@@ -732,7 +732,7 @@ df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
   if (!file.exists(fn_treefile_root) || params$redo) {
     # midpoint root
     tre <- ape::read.tree(fn_treefile)
-    tre_root <- phangorn::midpoint(tre)
+    tre_root <- phytools::midpoint.root(tre)
     ape::write.tree(tre_root, file=fn_treefile_root)
   }
 
@@ -741,12 +741,20 @@ df_midroot <- foreach (i=1:nrow(df_current), .combine='rbind') %dopar% {
     return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=NA))
   }
 
+  # open treefile
+  tre_root <- ape::read.tree(fn_treefile_root)
+
+  # extract the two clades
+  root_node <- length(tre_root$tip.label) + 1
+  child_node <- max(tre_root$edge[tre_root$edge[,1] == root_node, 2])
+  child_support <- as.numeric(tree$node.label[child_node - length(tre_root$tip.label)])
+
   # extract topology
-  top_root <- ape::read.tree(fn_treefile_root)
+  top_root <- tre_root
   top_root$edge.length <- NULL
   top_root$node.label <- NULL
 
-  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(top_root)))
+  return(data.table::data.table(window=df_current$window[i], length=df_current$length[i], topology=ape::write.tree(top_root), rootsplit_bootstrap=child_support))
 }
 
 stopCluster(nwcl)
