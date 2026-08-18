@@ -72,17 +72,18 @@ for (input in list_input) {
     df_winsum <- data.table::fread(fn_winsum)
 
     # extract the median and mean window size
-    df_visualisation_3 <- rbind(df_visualisation_3, data.table::data.table(chr=input,
-                                                                           wsize_mean=mean(df_winsum$length),
-                                                                           wsize_median=median(df_winsum$length)))
+    df_visualisation_3 <- rbind(df_visualisation_3, data.table::data.table(chr          = input,
+                                                                           chrlen       = sum(df_winsum$length),  
+                                                                           wsize_mean   = mean(df_winsum$length),
+                                                                           wsize_median = median(df_winsum$length)))
 
     # convert the lengths into genomic positions
     df_topsum <- df_topsum %>% mutate(start = lag(cumsum(length), default=0)+1,
                                       stop  = start+length-1,
                                       chr   = input)
-    df_winsum <- data.table::data.table(pos = seq(1, sum(df_winsum$length)),
-                                        len = rep(df_winsum$length, times=df_winsum$length),
-                                        chr = input)
+    df_winsum <- df_winsum %>% mutate(start = lag(cumsum(length), default=0)+1,
+                                      stop  = start+length-1,
+                                      chr   = input)
 
     # update the output data.frame
     df_visualisation <- rbind(df_visualisation, df_topsum)
@@ -133,8 +134,8 @@ print(plot)
 dev.off()
 
 # --- Window sizes across genomic coordinates -----------------
-plot <- ggplot(df_visualisation_2, aes(x=pos, y=len)) +
-  geom_point(linewidth=1, alpha=0.8) +
+plot <- ggplot(df_visualisation_2, aes(x=start, xend=stop, y=length, yend=length)) +
+  geom_segment(linewidth=1, alpha=0.8) +
   scale_y_log10(labels=scales::label_number(trim = TRUE, accuracy = NULL)) +
   facet_wrap(.~chr) +
   xlab("Genomic Position (bp)") + ylab("Block Length (bp)") +
@@ -163,9 +164,9 @@ models <- c("linear", "logarithmic", "asymptotic")
 colour_map <- c(linear="#00ba38", logarithmic="#619cff", asymptotic="#f8766d")
 
 # --- Mean window size vs chromosome length -------------------
-fit_lin  <- lm(wsize_mean ~ chr, data=df_visualisation_3)
-fit_log  <- lm(wsize_mean ~ log(chr), data=df_visualisation_3)
-fit_asym <- nls(wsize_mean ~ SSasymp(chr, Asym, R0, lrc), data=df_visualisation_3)
+fit_lin  <- lm(wsize_mean ~ chrlen, data=df_visualisation_3)
+fit_log  <- lm(wsize_mean ~ log(chrlen), data=df_visualisation_3)
+fit_asym <- nls(wsize_mean ~ SSasymp(chrlen, Asym, R0, lrc), data=df_visualisation_3)
 
 # update output table
 df_correlation <- rbind(df_correlation, data.table::data.table(wsize="mean", model="linear", r2=pseudo_r2(fit_lin, df_visualisation_3$wsize_mean), aic=AIC(fit_lin)),
@@ -178,7 +179,7 @@ linetype_map <- setNames(ifelse(models == best_model, "solid", "dashed"), models
 alpha_map <- setNames(ifelse(models == best_model, 1.0, 0.7), models)
 
 # create a sequence of x values for plotting the fitted lines
-x_seq <- seq(min(df_visualisation_3$chr), max(df_visualisation_3$chr), length.out=200)
+x_seq <- seq(min(df_visualisation_3$chrlen), max(df_visualisation_3$chrlen), length.out=200)
 newdata <- data.frame(chr=x_seq)
 
 df_lines <- data.frame(
@@ -193,7 +194,7 @@ df_lines <- data.frame(
 
 # visualisation
 plot <- ggplot(df_visualisation_3) +
-  geom_point(aes(x=chr/1000000, y=wsize_mean), size=5) +
+  geom_point(aes(x=chrlen/1000000, y=wsize_mean), size=5) +
   geom_line(data=df_lines, aes(colour=model, x=x/1000000, y=y, linetype=model, alpha=model), linewidth=2) +
   labs(x="Chromosome length (Mb)", y="Average window size (bp)", color="Model") +
   scale_colour_manual(values=colour_map) +
@@ -215,9 +216,9 @@ print(plot)
 dev.off()
 
 # --- Median window size vs chromosome length -----------------
-fit_lin  <- lm(wsize_median ~ chr, data=df_visualisation_3)
-fit_log  <- lm(wsize_median ~ log(chr), data=df_visualisation_3)
-fit_asym <- nls(wsize_median ~ SSasymp(chr, Asym, R0, lrc), data=df_visualisation_3)
+fit_lin  <- lm(wsize_median ~ chrlen, data=df_visualisation_3)
+fit_log  <- lm(wsize_median ~ log(chrlen), data=df_visualisation_3)
+fit_asym <- nls(wsize_median ~ SSasymp(chrlen, Asym, R0, lrc), data=df_visualisation_3)
 
 # update output table
 df_correlation <- rbind(df_correlation, data.table::data.table(wsize="median", model="linear", r2=pseudo_r2(fit_lin, df_visualisation_3$wsize_median), aic=AIC(fit_lin)),
@@ -242,7 +243,7 @@ df_lines <- data.frame(
 
 # visualisation
 plot <- ggplot(df_visualisation_3) +
-  geom_point(aes(x=chr/1000000, y=wsize_median), size=5) +
+  geom_point(aes(x=chrlen/1000000, y=wsize_median), size=5) +
   geom_line(data=df_lines, aes(colour=model, x=x/1000000, y=y, linetype=model, alpha=model), linewidth=2) +
   labs(x="Chromosome length (Mb)", y="Median window size (bp)", color="Model") +
   scale_colour_manual(values=colour_map) +
