@@ -80,7 +80,7 @@ render_params <- list(
   redo                  = as.logical(f_get_param(cfg$redo, FALSE)),
 
   exe_seqkit            = f_get_param(cfg$exe_seqkit, "seqkit"),
-  exe_iqtree            = f_get_param(cfg$exe_iqtree, "iqtree3"),
+  exe_iqtree            = f_get_param(cfg$exe_iqtree, "iqtree2"),
 
   set_blmin             = as.logical(f_get_param(cfg$set_blmin, TRUE)),
   set_model             = as.logical(f_get_param(cfg$set_model, FALSE)),
