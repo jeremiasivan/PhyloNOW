@@ -3,7 +3,8 @@
 # ============================================================
 #  Summarise multiple PhyloNOW runs
 #
-#  Usage: Rscript summarise_multiple_runs.R -i /home/user/phyloNOW_runs/ -o /home/user/phyloNOW_summary/
+#  Usage: Rscript summarise_multiple_runs.R -i /phyloNOW_runs/ -o /phyloNOW_summary/
+#         Rscript summarise_multiple_runs.R -i /phyloNOW_runs/ -o /phyloNOW_summary/ -e chrM,chrX,chrY
 # ============================================================
 
 # --- Load libraries and function ----------------------------
@@ -15,7 +16,9 @@ option_list <- list(
   make_option(c("-i", "--input"), type="character", default=NULL,
               help="Path to directory containing multiple PhyloNOW runs [required]", metavar="DIR"),
   make_option(c("-o", "--output"), type="character", default=NULL,
-              help="Path to output directory for summaries [required]", metavar="DIR")
+              help="Path to output directory for summaries [required]", metavar="DIR"),
+  make_option(c("-e", "--exclude"), type="character", default=NULL,
+              help="Comma-separated list of chromosomes to exclude", metavar="CHR")            
 )
 
 # parse the arguments
@@ -34,6 +37,12 @@ output_dir <- path.expand(opt$output)
 list_input <- list.dirs(input_dir, recursive=FALSE, full.names=FALSE)
 if (length(list_input) == 0) {
     stop(paste("No subdirectories found in input directory:", input_dir))
+}
+
+# extract list of excluded chromosomes (if provided)
+if (!is.null(opt$exclude)) {
+  exclude_chrs <- unlist(strsplit(opt$exclude, split=","))
+  list_input <- list_input[!list_input%in%exclude_chrs]
 }
 
 # create output directory if not exists
@@ -160,18 +169,27 @@ pseudo_r2 <- function(fit, y) {
 
 # output table
 df_correlation <- data.table::data.table(wsize=character(), model=character(), r2=numeric(), aic=numeric())
-models <- c("linear", "logarithmic", "asymptotic")
 colour_map <- c(linear="#00ba38", logarithmic="#619cff", asymptotic="#f8766d")
 
 # --- Mean window size vs chromosome length -------------------
 fit_lin  <- lm(wsize_mean ~ chrlen, data=df_visualisation_3)
 fit_log  <- lm(wsize_mean ~ log(chrlen), data=df_visualisation_3)
-fit_asym <- nls(wsize_mean ~ SSasymp(chrlen, Asym, R0, lrc), data=df_visualisation_3)
+fit_asym <- tryCatch({
+  nls(wsize_mean ~ SSasymp(chrlen, Asym, R0, lrc), data=df_visualisation_3)
+}, error = function(e) {
+  message("Warning: asymptotic fit failed for mean window size: ", conditionMessage(e))
+  NULL
+})
 
 # update output table
-df_correlation <- rbind(df_correlation, data.table::data.table(wsize="mean", model="linear", r2=pseudo_r2(fit_lin, df_visualisation_3$wsize_mean), aic=AIC(fit_lin)),
-                                        data.table::data.table(wsize="mean", model="logarithmic", r2=pseudo_r2(fit_log, df_visualisation_3$wsize_mean), aic=AIC(fit_log)),
-                                        data.table::data.table(wsize="mean", model="asymptotic", r2=pseudo_r2(fit_asym, df_visualisation_3$wsize_mean), aic=AIC(fit_asym)))
+models <- c("linear", "logarithmic", if (!is.null(fit_asym)) {"asymptotic"})
+df_correlation <- rbind(df_correlation,
+                        data.table::data.table(wsize="mean", model="linear", r2=pseudo_r2(fit_lin, df_visualisation_3$wsize_mean), aic=AIC(fit_lin)),
+                        data.table::data.table(wsize="mean", model="logarithmic", r2=pseudo_r2(fit_log, df_visualisation_3$wsize_mean), aic=AIC(fit_log)))
+if (!is.null(fit_asym)) {
+  df_correlation <- rbind(df_correlation,
+                          data.table::data.table(wsize="mean", model="asymptotic", r2=pseudo_r2(fit_asym, df_visualisation_3$wsize_mean), aic=AIC(fit_asym)))
+}
 
 # set linetypes and alphas based on best model (lowest AIC)
 best_model <- df_correlation %>% filter(wsize == "mean") %>% slice(which.min(aic)) %>% pull(model)
@@ -180,16 +198,23 @@ alpha_map <- setNames(ifelse(models == best_model, 1.0, 0.7), models)
 
 # create a sequence of x values for plotting the fitted lines
 x_seq <- seq(min(df_visualisation_3$chrlen), max(df_visualisation_3$chrlen), length.out=200)
-newdata <- data.frame(chr=x_seq)
+newdata <- data.frame(chrlen=x_seq)
 
+# create a list of predictions for each model
+ls_predict <- list(
+  linear      = predict(fit_lin, newdata=newdata),
+  logarithmic = predict(fit_log, newdata=newdata)
+)
+
+if (!is.null(fit_asym)) {
+  ls_predict$asymptotic <- predict(fit_asym, newdata=newdata)
+}
+
+# create a sequence of x values for plotting the fitted lines
 df_lines <- data.frame(
-  x = rep(x_seq, 3),
-  y = c(
-    predict(fit_lin, newdata=newdata),
-    predict(fit_log, newdata=newdata),
-    predict(fit_asym, newdata=newdata)
-  ),
-  model = rep(models, each=200)
+  x = rep(x_seq, length(ls_predict)),
+  y = unlist(ls_predict),
+  model = rep(names(ls_predict), each=200)
 )
 
 # visualisation
@@ -218,27 +243,43 @@ dev.off()
 # --- Median window size vs chromosome length -----------------
 fit_lin  <- lm(wsize_median ~ chrlen, data=df_visualisation_3)
 fit_log  <- lm(wsize_median ~ log(chrlen), data=df_visualisation_3)
-fit_asym <- nls(wsize_median ~ SSasymp(chrlen, Asym, R0, lrc), data=df_visualisation_3)
+fit_asym <- tryCatch({
+  nls(wsize_median ~ SSasymp(chrlen, Asym, R0, lrc), data=df_visualisation_3)
+}, error = function(e) {
+  message("Warning: asymptotic fit failed for median window size: ", conditionMessage(e))
+  NULL
+})
 
 # update output table
-df_correlation <- rbind(df_correlation, data.table::data.table(wsize="median", model="linear", r2=pseudo_r2(fit_lin, df_visualisation_3$wsize_median), aic=AIC(fit_lin)),
-                                        data.table::data.table(wsize="median", model="logarithmic", r2=pseudo_r2(fit_log, df_visualisation_3$wsize_median), aic=AIC(fit_log)),
-                                        data.table::data.table(wsize="median", model="asymptotic", r2=pseudo_r2(fit_asym, df_visualisation_3$wsize_median), aic=AIC(fit_asym)))
+models <- c("linear", "logarithmic", if (!is.null(fit_asym)) {"asymptotic"})
+df_correlation <- rbind(df_correlation,
+                        data.table::data.table(wsize="median", model="linear", r2=pseudo_r2(fit_lin, df_visualisation_3$wsize_median), aic=AIC(fit_lin)),
+                        data.table::data.table(wsize="median", model="logarithmic", r2=pseudo_r2(fit_log, df_visualisation_3$wsize_median), aic=AIC(fit_log)))
+if (!is.null(fit_asym)) {
+  df_correlation <- rbind(df_correlation,
+                          data.table::data.table(wsize="median", model="asymptotic", r2=pseudo_r2(fit_asym, df_visualisation_3$wsize_median), aic=AIC(fit_asym)))
+}
 
 # set linetypes and alphas based on best model (lowest AIC)
 best_model <- df_correlation %>% filter(wsize == "median") %>% slice(which.min(aic)) %>% pull(model)
 linetype_map <- setNames(ifelse(models == best_model, "solid", "dashed"), models)
 alpha_map <- setNames(ifelse(models == best_model, 1.0, 0.7), models)
 
+# create a list of predictions for each model
+ls_predict <- list(
+  linear      = predict(fit_lin, newdata=newdata),
+  logarithmic = predict(fit_log, newdata=newdata)
+)
+
+if (!is.null(fit_asym)) {
+  ls_predict$asymptotic <- predict(fit_asym, newdata=newdata)
+}
+
 # create a sequence of x values for plotting the fitted lines
 df_lines <- data.frame(
-  x = rep(x_seq, 3),
-  y = c(
-    predict(fit_lin, newdata=newdata),
-    predict(fit_log, newdata=newdata),
-    predict(fit_asym, newdata=newdata)
-  ),
-  model = rep(models, each=200)
+  x = rep(x_seq, length(ls_predict)),
+  y = unlist(ls_predict),
+  model = rep(names(ls_predict), each=200)
 )
 
 # visualisation
